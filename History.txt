@@ -1,0 +1,9 @@
+== 0.0.2 2013-08-19
+
+* ActionMailer integration
+* add gpg method to Mail::Message
+* support importing of public keys
+
+== 0.0.1 2013-08-18
+
+* Initial release

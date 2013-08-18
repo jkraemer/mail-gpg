@@ -22,5 +22,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "gpgme", "~> 2.0.2"
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
+  spec.add_development_dependency "actionmailer", ">= 3.2.0"
   spec.add_development_dependency "pry-nav"
+  spec.add_development_dependency "shoulda-context"
 end
