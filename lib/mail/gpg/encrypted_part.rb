@@ -3,6 +3,8 @@ module Mail
     class EncryptedPart < Mail::Part
 
       # options are:
+      # :sign_as : sign using this key (give the corresponding email address)
+      # :passphrase: passphrase for the signing key
       # :recipients : array of receiver addresses
       # :always_trust : send encrypted mail to untrusted receivers, true by default
       def initialize(parts, options = {})
