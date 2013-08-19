@@ -1,5 +1,4 @@
 .ruby-version
-test/gpghome
 *.gem
 *.rbc
 .bundle
