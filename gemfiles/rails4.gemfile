@@ -1,0 +1,11 @@
+source 'https://rubygems.org'
+
+gem 'rake'
+
+gem 'mail', '~> 2.5.3'
+gem 'gpgme', '~> 2.0.2'
+gem 'actionmailer', '~> 4.0.0'
+
+gem 'shoulda-context', '~> 1.1.5'
+
+
