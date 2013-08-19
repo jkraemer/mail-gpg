@@ -109,7 +109,6 @@ therefore be substantially faster.
 * Add optional on the fly import of recipients' keys from public key servers based on email address
 * Send encrypted mails to recipients when possible, fall back to unencrypted
   mail otherwise
-* Ease and document usage with Rails' ActionMailer
 
 
 ## Contributing
