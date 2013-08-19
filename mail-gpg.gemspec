@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Mail::Gpg::VERSION
   spec.authors       = ["Jens Kraemer"]
   spec.email         = ["jk@jkraemer.net"]
-  spec.description   = "GPG/MIME encryption plugin for the Ruby Mail Library\nBecause privacy matters."
+  spec.description   = "GPG/MIME encryption plugin for the Ruby Mail Library\nThis tiny gem adds GPG capabilities to Mail::Message and ActionMailer::Base. Because privacy matters."
   spec.summary       = %q{GPG/MIME encryption plugin for the Ruby Mail Library}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/jkraemer/mail-gpg"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
