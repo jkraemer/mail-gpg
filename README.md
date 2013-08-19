@@ -1,4 +1,4 @@
-# Mail::Gpg
+# Mail::Gpg [![Build Status](https://travis-ci.org/jkraemer/mail-gpg.png?branch=master)](https://travis-ci.org/jkraemer/mail-gpg)
 
 This gem adds GPG/MIME encryption capabilities to the [Ruby Mail
 Library](https://github.com/mikel/mail)
