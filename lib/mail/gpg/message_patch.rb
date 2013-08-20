@@ -21,7 +21,11 @@ module Mail
       # See Mail::Gpg methods encrypt and sign for more
       # possible options
       #
-      # mail.gpg true
+      # mail.gpg encrypt: true
+      # mail.gpg encrypt: true, sign: true
+      # mail.gpg encrypt: true, sign_as: "other_address@host.com"
+      #
+      # future versions will also support sign-only mode:
       # mail.gpg sign_as: 'jane@doe.com', encrypt: false
       #
       # To turn off gpg encryption use:

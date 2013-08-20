@@ -8,7 +8,7 @@ class MyMailer < ActionMailer::Base
   end
 
   def encrypted
-    mail subject: 'encrypted', body: 'encrypted mail', gpg: true
+    mail subject: 'encrypted', body: 'encrypted mail', gpg: {encrypt: true}
   end
 
 
@@ -30,7 +30,7 @@ class ActionMailerTest < Test::Unit::TestCase
 
     should "send encrypted mail" do
       assert m = MyMailer.encrypted
-      assert true == m.gpg
+      assert true == m.gpg[:encrypt]
       m.deliver
       assert_equal 1, @emails.size
       assert m = @emails.first

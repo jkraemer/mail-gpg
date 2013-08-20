@@ -32,19 +32,19 @@ with the gpg method:
       add_file "some_attachment.zip"
 
       # encrypt message, no signing
-      gpg true
+      gpg encrypt: true
 
       # encrypt and sign message with sender's private key, using the given
       # passphrase to decrypt the key
-      gpg sign: true, password: 'secret'
+      gpg encrypt: true, sign: true, password: 'secret'
 
       # encrypt and sign message using a different key
-      gpg sign_as: 'joe@otherdomain.com', password: 'secret'
+      gpg encrypt: true, sign_as: 'joe@otherdomain.com', password: 'secret'
 
 
       # encrypt and sign message and use a callback function to provide the
       # passphrase.
-      gpg sign_as: 'joe@otherdomain.com',
+      gpg encrypt: true, sign_as: 'joe@otherdomain.com',
           passphrase_callback: ->(obj, uid_hint, passphrase_info, prev_was_bad, fd){puts "Enter passphrase for #{passphrase_info}: "; (IO.for_fd(fd, 'w') << readline.chomp).flush }
     end.deliver
 
@@ -64,7 +64,7 @@ armored key data for recipients using the `:keys` option like this:
 
     Mail.new do
       to 'john@foo.bar'
-      gpg keys: { 'john@foo.bar' => johns_key }
+      gpg encrypt: true, keys: { 'john@foo.bar' => johns_key }
     end
 
 The key will then be imported before actually trying to encrypt/send the mail.
@@ -85,7 +85,7 @@ This is not implemented yet
     class MyMailer < ActionMailer::Base
       default from: 'baz@bar.com'
       def some_mail
-        mail to: 'foo@bar.com', subject: 'subject!', gpg: true
+        mail to: 'foo@bar.com', subject: 'subject!', gpg: { encrypt: true }
       end
     end
 

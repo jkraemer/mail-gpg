@@ -29,7 +29,7 @@ class MessageTest < Test::Unit::TestCase
 
     context "with gpg turned on" do
       setup do
-        @mail.gpg true
+        @mail.gpg encrypt: true
       end
 
       context "with missing key" do
@@ -77,7 +77,7 @@ class MessageTest < Test::Unit::TestCase
 
       should "set and unset delivery_handler" do
         m = Mail.new do
-          gpg true
+          gpg encrypt: true
         end
         assert m.gpg
         assert dh = m.delivery_handler

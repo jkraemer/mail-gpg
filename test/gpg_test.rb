@@ -13,7 +13,7 @@ class GpgTest < Test::Unit::TestCase
     assert_equal 2, encrypted.parts.size
     v_part, enc_part = encrypted.parts
 
-    assert_match /Version 1/, v_part.to_s
+    assert_match /Version: 1/, v_part.to_s
     assert_equal 'application/pgp-encrypted; charset=UTF-8', v_part.content_type
 
     assert_equal 'application/octet-stream; name=encrypted.asc',

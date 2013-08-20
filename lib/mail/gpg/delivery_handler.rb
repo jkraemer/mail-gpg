@@ -6,8 +6,15 @@ module Mail
         if mail.gpg
           encrypted_mail = nil
           begin
-            options = TrueClass === mail.gpg ? {} : mail.gpg
-            encrypted_mail = Mail::Gpg.encrypt(mail, options)
+            options = TrueClass === mail.gpg ? { encrypt: true } : mail.gpg
+            if options.delete(:encrypt)
+              encrypted_mail = Mail::Gpg.encrypt(mail, options)
+            elsif options[:sign] || options[:sign_as]
+              raise "signing without encryption is not supported yet"
+            else
+              # encrypt and sign are off -> do not encrypt or sign
+              yield
+            end
           rescue Exception
             raise $! if mail.raise_encryption_errors
           end
