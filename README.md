@@ -68,7 +68,7 @@ armored key data for recipients using the `:keys` option like this:
     end
 
 The key will then be imported before actually trying to encrypt/send the mail.
-SoiIn theory you only need to specify the key once like that, however doing it
+In theory you only need to specify the key once like that, however doing it
 every time does not hurt as gpg is clever enough to recognize known keys, only
 updating it's db when necessary.
 
@@ -96,19 +96,19 @@ Mail::Message#gpg method.
 
     bundle exec rake
 
-The first run will take a while since it sets up a mock gpg home directory in
-`test/gpghome` containing two different identities used in the test cases.
-Following test runs will use that directory if it still exists and will
-therefore be substantially faster.
+Test cases use a mock gpghome located in `test/gpghome` in order to not mess
+around with your personal gpg keychain.
+
 
 ## Todo
 
 * Signing of unencrypted mails
-* Decryption
-* Signature verification
-* Add optional on the fly import of recipients' keys from public key servers based on email address
-* Send encrypted mails to recipients when possible, fall back to unencrypted
-  mail otherwise
+* Decryption and signature verification for received mails
+* on the fly import of recipients' keys from public key servers based on email address or key id
+* handle encryption errors due to missing keys - maybe return a list of failed
+  recipients
+* add some setup code to help initialize a basic keychain directory with
+  public/private keypair.
 
 
 ## Contributing
