@@ -1,3 +1,9 @@
+== 0.0.3 2013-08-20
+
+* better ActionMailer integration
+* 'gpg encrypt: true' instead of 'gpg true'
+* test coverage
+
 == 0.0.2 2013-08-19
 
 * ActionMailer integration
