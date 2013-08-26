@@ -63,15 +63,14 @@ module Mail
       # normalizes the list of recipients' emails, key ids and key data to a
       # list of Key objects
       def keys_for_data(emails_or_shas_or_keys, key_data = nil)
-        keys = if key_data
-          emails_or_shas_or_keys.map do |r|
+        if key_data
+          [emails_or_shas_or_keys].flatten.map do |r|
             # import any given keys
             k = key_data[r]
             if k and k =~ /-----BEGIN PGP/
-              GPGME::Key.import k
-              k = nil
+              k = GPGME::Key.import(k).imports.map(&:fpr)
             end
-            GPGME::Key.find(:public, k || r)
+            GPGME::Key.find(:public, k || r, :encrypt)
           end.flatten
         else
           # key lookup in keychain for all receivers
