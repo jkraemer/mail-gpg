@@ -1,3 +1,8 @@
+== 0.0.5 2013-08-28
+
+* add some docs to the Hkp client
+* also add convenience method to fetch and import keys
+
 == 0.0.4 2013-08-27
 
 * better ActionMailer integration
