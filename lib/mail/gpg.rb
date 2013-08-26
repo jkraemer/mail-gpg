@@ -43,7 +43,7 @@ module Mail
         add_part EncryptedPart.new(cleartext_mail,
                                    options.merge({recipients: receivers}))
         content_type "multipart/encrypted; protocol=\"application/pgp-encrypted\"; boundary=#{boundary}"
-        body.preamble = "This is an OpenPGP/MIME encrypted message (RFC 2440 and 3156)"
+        body.preamble = options[:preamble] || "This is an OpenPGP/MIME encrypted message (RFC 2440 and 3156)"
       end
     end
 
