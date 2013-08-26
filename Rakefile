@@ -5,6 +5,7 @@ require 'gpgme'
 def setup_gpghome
   gpghome = File.join File.dirname(__FILE__), 'test', 'gpghome'
   ENV['GNUPGHOME'] = gpghome
+  ENV['GPG_AGENT_INFO'] = '' # disable gpg agent
   unless File.directory? gpghome
     FileUtils.mkdir_p gpghome
     GPGME::Ctx.new do |gpg|
