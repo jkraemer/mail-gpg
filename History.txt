@@ -1,3 +1,7 @@
+== 0.0.6 2013-08-28
+
+* bugfix: onlyu encrypt to specified keys if :keys option is present
+
 == 0.0.5 2013-08-28
 
 * add some docs to the Hkp client
