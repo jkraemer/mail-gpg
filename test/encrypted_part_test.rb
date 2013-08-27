@@ -1,6 +1,5 @@
 require 'test_helper'
 require 'mail/gpg/encrypted_part'
-require 'pry-nav'
 
 class EncryptedPartTest < Test::Unit::TestCase
   context 'EncryptedPart' do
