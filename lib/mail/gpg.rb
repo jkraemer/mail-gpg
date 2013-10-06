@@ -4,6 +4,7 @@ require 'gpgme'
 
 require 'mail/gpg/version'
 require 'mail/gpg/version_part'
+require 'mail/gpg/decrypted_part'
 require 'mail/gpg/encrypted_part'
 require 'mail/gpg/message_patch'
 require 'mail/gpg/rails'
@@ -48,7 +49,28 @@ module Mail
     end
 
     def self.decrypt(encrypted_mail, options = {})
-      # TODO :)
+      if (encrypted_mail.has_content_type? && 
+          'multipart/encrypted' == encrypted_mail.mime_type &&
+          'application/pgp-encrypted' == encrypted_mail.content_type_parameters[:protocol])
+         
+         decrypt_pgp_mime(encrypted_mail, options)
+      else
+        raise EncodingError, "Unsupported encryption format '#{encrypted_mail.content_type}'"
+      end
+    end
+    
+    private
+
+    # decrypts PGP/MIME (RFC 3156, section 4) encrypted mail
+    def self.decrypt_pgp_mime(encrypted_mail, options)
+      # MUST containt exactly two body parts
+      if encrypted_mail.parts.length != 2
+        raise EncodingError, "RFC 3136 mandates exactly two body parts, found '#{encrypted_mail.parts.length}'"
+      end
+      if !VersionPart.isVersionPart? encrypted_mail.parts[0]
+        raise EncodingError, "RFC 3136 first part not a valid version part '#{encrypted_mail.parts[0]}'"
+      end
+      Mail.new(DecryptedPart.new(encrypted_mail.parts[1], options))
     end
   end
 end
