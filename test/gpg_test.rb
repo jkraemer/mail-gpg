@@ -21,10 +21,11 @@ class GpgTest < Test::Unit::TestCase
   end
 
 
-  def check_content
-    assert enc = @encrypted.parts.last
+  def check_content(mail = @mail, encrypted = @encrypted)
+    assert enc = encrypted.parts.last
     assert clear = GPGME::Crypto.new.decrypt(enc.to_s, password: 'abc').to_s
     assert_match /encrypt me/, clear
+    assert_equal mail.to_s, clear
   end
 
 
@@ -64,6 +65,25 @@ class GpgTest < Test::Unit::TestCase
       end
 
     end
+    
+    context 'simple mail (signed)' do
+      setup do
+        @encrypted = Mail::Gpg.encrypt(@mail, { :sign => true, :password => 'abc' })
+      end
+
+      should 'have same recipients and subject' do
+        check_headers
+      end
+
+      should 'have proper gpgmime structure' do
+        check_mime_structure
+      end
+
+      should 'have correctly encrypted content' do
+        check_content
+      end
+
+    end    
 
     context 'mail with custom header' do
       setup do
