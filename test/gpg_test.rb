@@ -64,6 +64,10 @@ class GpgTest < Test::Unit::TestCase
         check_content
       end
 
+      should 'decrypt' do
+        assert mail = Mail::Gpg.decrypt(@encrypted, { :password => 'abc' })
+        assert mail == @mail
+      end
     end
     
     context 'simple mail (signed)' do
@@ -83,6 +87,10 @@ class GpgTest < Test::Unit::TestCase
         check_content
       end
 
+      should 'decrypt and verify' do
+        assert mail = Mail::Gpg.decrypt(@encrypted, { :verify => true, :password => 'abc' })
+        assert mail == @mail
+      end
     end    
 
     context 'mail with custom header' do
@@ -105,6 +113,11 @@ class GpgTest < Test::Unit::TestCase
 
       should 'preserve customer header values' do
         assert_equal 'custom value', @encrypted.header['X-Custom-Header'].to_s
+      end
+      
+      should 'decrypt' do
+        assert mail = Mail::Gpg.decrypt(@encrypted, { :password => 'abc' })
+        assert mail == @mail
       end
     end
 
@@ -130,6 +143,10 @@ class GpgTest < Test::Unit::TestCase
         assert encrypted_body = @encrypted.parts.last.to_s
       end
 
+      should 'decrypt' do
+        assert mail = Mail::Gpg.decrypt(@encrypted, { :password => 'abc' })
+        assert mail == @mail
+      end
     end
 
     context 'multipart mail' do
@@ -158,6 +175,12 @@ class GpgTest < Test::Unit::TestCase
         assert_equal 2, m.parts.size
         assert_match /encrypt me/, m.parts.first.body.to_s
         assert_match /Rakefile/, m.parts.last.content_disposition
+      end
+      
+      should 'decrypt' do
+        assert mail = Mail::Gpg.decrypt(@encrypted, { :password => 'abc' })
+        assert mail == @mail
+        assert mail.parts[1] == @mail.parts[1]
       end
     end
   end
