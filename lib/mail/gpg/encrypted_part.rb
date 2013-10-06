@@ -2,10 +2,12 @@ module Mail
   module Gpg
     class EncryptedPart < Mail::Part
 
+      CONTENT_TYPE = 'application/octet-stream'
+
       # options are:
       #
       # :signers : sign using this key (give the corresponding email address)
-      # :passphrase: passphrase for the signing key
+      # :password: passphrase for the signing key
       # :recipients : array of receiver addresses
       # :keys : A hash mapping recipient email addresses to public keys or public
       # key ids. Imports any keys given here that are not already part of the
@@ -17,7 +19,7 @@ module Mail
         encrypted = encrypt(cleartext_mail.encoded, options)
         super() do
           body encrypted.to_s
-          content_type 'application/octet-stream; name="encrypted.asc"'
+          content_type "#{CONTENT_TYPE}; name=\"encrypted.asc\""
           content_disposition 'inline; filename="encrypted.asc"'
           content_description 'OpenPGP encrypted message'
         end
@@ -40,7 +42,7 @@ module Mail
           begin
             if options[:sign]
               if options[:signers]
-                signers = Key.find(:public, options[:signers], :sign)
+                signers = GPGME::Key.find(:public, options[:signers], :sign)
                 ctx.add_signer(*signers)
               end
               ctx.encrypt_sign(recipient_keys, plain_data, cipher_data, flags)
