@@ -77,7 +77,14 @@ You may also want to have a look at the [GPGME](https://github.com/ueno/ruby-gpg
 
 ### Signing only
 
-This is not implemented yet
+Just leave the the `:encrypt` option out or pass `encrypt: false`, i.e.
+
+```
+Mail.new do
+	to 'jane@doe.net'
+	gpg sign: true
+end.deliver 
+```
 
 
 ## Rails / ActionMailer integration

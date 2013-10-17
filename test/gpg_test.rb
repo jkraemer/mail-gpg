@@ -17,7 +17,7 @@ class GpgTest < Test::Unit::TestCase
     assert_equal 'application/pgp-encrypted; charset=UTF-8', v_part.content_type
 
     assert_equal 'application/octet-stream; name=encrypted.asc',
-      enc_part.content_type
+    enc_part.content_type
   end
 
 
@@ -28,6 +28,27 @@ class GpgTest < Test::Unit::TestCase
     assert_equal mail.to_s, clear
   end
 
+	def check_signature(mail = @mail, signed = @signed)
+		assert signature = signed.parts.detect{|p| p.content_type =~ /signature\.asc/}.body.to_s
+		GPGME::Crypto.new.verify(signature, signed_text: mail.encoded) do |sig| 
+			assert true == sig.valid?
+		end
+	end
+
+	def check_mime_structure_signed(mail = @mail, signed = @signed)
+		assert_equal 2, signed.parts.size
+		sign_part, orig_part = signed.parts	
+
+		assert_equal 'application/pgp-signature; name=signature.asc', sign_part.content_type
+		assert_equal orig_part.content_type, @mail.content_type
+	end
+
+  def check_headers_signed(mail = @mail, signed = @signed)
+    assert_equal mail.to, signed.to
+    assert_equal mail.cc, signed.cc
+    assert_equal mail.bcc, signed.bcc
+    assert_equal mail.subject, signed.subject
+  end
 
   context "gpg installation" do
     should "have keys for jane and joe" do
@@ -35,6 +56,104 @@ class GpgTest < Test::Unit::TestCase
       assert jane = GPGME::Key.find(:public, 'jane@foo.bar').first
     end
   end
+
+	context "gpg signed" do
+		setup do
+			@mail = Mail.new do
+				to 'joe@foo.bar'
+				from 'jane@foo.bar'
+				subject 'test test'
+				body 'sign me!'
+			end
+		end
+
+		context 'simple mail' do
+			setup do
+				@signed = Mail::Gpg.sign(@mail, password: 'abc')
+			end
+
+			should 'have same recipients and subject' do
+				check_headers_signed
+			end
+
+			should 'have proper gpgmime structure' do
+				check_mime_structure_signed
+			end
+
+			should 'have correct signature' do
+				check_signature
+			end
+		end
+
+    context 'mail with custom header' do
+      setup do
+        @mail.header['X-Custom-Header'] = 'custom value'
+        @signed = Mail::Gpg.sign(@mail, password: 'abc')
+      end
+
+      should 'have same recipients and subject' do
+        check_headers_signed
+      end
+
+      should 'have proper gpgmime structure' do
+        check_mime_structure_signed
+      end
+
+      should 'have correct signature' do
+        check_signature
+      end
+
+      should 'preserve customer header values' do
+        assert_equal 'custom value', @signed.header['X-Custom-Header'].to_s
+      end
+    end
+
+    context 'mail with multiple recipients' do
+      setup do
+        @mail.bcc 'jane@foo.bar'
+        @signed = Mail::Gpg.sign(@mail, password: 'abc')
+      end
+
+      should 'have same recipients and subject' do
+        check_headers_signed
+      end
+
+      should 'have proper gpgmime structure' do
+        check_mime_structure_signed
+      end
+
+      should 'have correct signature' do
+        check_signature
+      end
+    end
+
+    context 'multipart mail' do
+      setup do
+        @mail.add_file 'Rakefile'
+        @signed = Mail::Gpg.sign(@mail, password: 'abc')
+      end
+
+      should 'have same recipients and subject' do
+        check_headers_signed
+      end
+
+      should 'have proper gpgmime structure' do
+        check_mime_structure_signed
+      end
+
+      should 'have correct signature' do
+        check_signature
+      end
+
+      should 'have multiple parts in original content' do
+        assert original_part = @signed.parts.last
+        assert original_part.multipart?
+        assert_equal 2, original_part.parts.size
+        assert_match /sign me!/, original_part.parts.first.body.to_s
+        assert_match /Rakefile/, original_part.parts.last.content_disposition
+      end
+    end
+	end
 
   context "gpg encrypted" do
 

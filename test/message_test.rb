@@ -27,6 +27,31 @@ class MessageTest < Test::Unit::TestCase
       end
     end
 
+		context "with gpg signing only" do
+			setup do
+				@mail.gpg sign: true, password: 'abc'
+			end
+
+      context "" do
+        setup do
+          @mail.deliver
+        end
+
+        should "deliver signed mail" do
+          assert_equal 1, @mails.size
+          assert m = @mails.first
+          assert_equal 'test', m.subject
+          assert m.multipart?
+          assert sign_part = m.parts.last
+          assert m = Mail::Message.new(m.parts.last)
+          assert !m.multipart?
+					GPGME::Crypto.new.verify(sign_part.body.to_s, signed_text: @mail.encoded) do |sig| 
+						assert true == sig.valid?
+					end
+        end
+      end
+		end
+
     context "with gpg turned on" do
       setup do
         @mail.gpg encrypt: true
