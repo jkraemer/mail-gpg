@@ -62,7 +62,7 @@ module Mail
     end
 
 		def self.get_keyserver_url(options = {})
-			url = options[:key_server]
+			url = TrueClass === options[:key_server] ? nil : options[:key_server]
 			if url.blank?
 				if default_keyserver_url.present?
 					url = default_keyserver_url
@@ -80,7 +80,7 @@ module Mail
 
 		def self.get_keys_from_pk_server(email_or_sha, options = {})
 			require 'net/http'
-			url = options[:key_server] || "http://pool.sks-keyservers.net"
+			return [] unless url = get_keyserver_url(options)
 			uri = URI.parse("#{url}/pks/lookup?op=get&options=mr&search=#{URI.encode(email_or_sha)}")
 			req = Net::HTTP::Get.new(uri.to_s)
 			res = Net::HTTP.start(uri.host, 11371) do |http|

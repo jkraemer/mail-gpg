@@ -85,7 +85,7 @@ module Mail
               k = GPGME::Key.import(k).imports.map(&:fpr)
             end
             k = GPGME::Key.find(:public, k || r, :encrypt)
-						if k.count == 0 and (options[:use_key_servers] or options[:key_server])
+						if k.count == 0 and options[:key_server]
 							k = Mail::Gpg.get_keys_from_pk_server(r, options)
 						end
           end.flatten
@@ -93,7 +93,7 @@ module Mail
 					# key lookup in keychain for all receivers
 					[emails_or_shas_or_keys].flatten.map do |r|
 						keys = GPGME::Key.find(:public, r, :encrypt)
-						if keys.count == 0 and (options[:use_key_servers] or options[:key_server])
+						if keys.count == 0 and options[:key_server]
 							keys = Mail::Gpg.get_keys_from_pk_server(r, options)
 						end
 						keys
