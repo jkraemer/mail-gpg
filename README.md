@@ -79,6 +79,42 @@ You may also want to have a look at the [GPGME](https://github.com/ueno/ruby-gpg
 
 This is not implemented yet
 
+### Key import from public key servers
+
+When encrypting emails, public encryption keys can automatically be downloaded 
+and imported from a public key server.
+
+To enable automatic key lookup, pass the `:key_server` option.
+
+```
+Mail.new do
+	to 'jane@doe.net'
+	gpg encrypt: true, key_server: true
+end
+```
+
+The mailer will try to determine the keyserver url set from the system's gpg config
+via the `gpgconf` command if installed. If not, it will then try to  look up the
+url in the gpg.conf file (typically ~/.gnupg/gpg.conf).
+
+You can also specify the keyserver to be used:
+
+```
+Mail.new do
+	to 'jane@doe.net'
+	gpg encrypt: true, key_server: 'hkp://keys.gnupg.net'
+end
+``` 
+
+Furthermore you can specify the default keyserver by setting the GPG module's
+`default_keyserver_url` attribute (i.e. in an initializer):
+
+```
+Mail::Gpg.default_keyserver_url = 'hkp://keys.gnupg.net'
+```
+
+This setting will be preferred to the system's gpg config.
+
 
 ## Rails / ActionMailer integration
 
