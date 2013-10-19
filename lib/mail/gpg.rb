@@ -58,6 +58,42 @@ module Mail
         raise EncodingError, "Unsupported encryption format '#{encrypted_mail.content_type}'"
       end
     end
+
+		def self.get_keyserver_url(options = {})
+			url = options[:key_server]
+			if url.blank?
+				res = `gpgconf --list-options gpgs 2>&1 | grep keyserver 2>&1` 
+				if $?.exitstatus == 0
+					url = URI.decode(res.split(":").last.split("\"").last.strip)
+				else
+					res = `gpg --gpgconf-list 2>&1 | grep gpgconf-gpg.conf 2>&1`
+					if $?.exitstatus == 0
+						conf_file = res.split(":").last.split("\"").last.strip
+						res = `cat #{conf_file} 2>&1 | grep ^keyserver 2>&1`
+						if $?.exitstatus == 0
+							url = res.split(" ").last.strip
+						end
+					end
+				end
+			end
+			url
+		end
+
+		def self.get_keys_from_pk_server(email_or_sha, options = {})
+			require 'net/http'
+			url = options[:key_server] || "http://pool.sks-keyservers.net"
+			uri = URI.parse("#{url}/pks/lookup?op=get&options=mr&search=#{URI.encode(email_or_sha)}")
+			req = Net::HTTP::Get.new(uri.to_s)
+			res = Net::HTTP.start(uri.host, 11371) do |http|
+				http.request req
+			end
+			if res.code =~ /200/
+				fprs = GPGME::Key.import(res.body).imports.map(&:fpr)
+				GPGME::Key.find(:public, fprs, :encrypt)
+			else
+				[]
+			end
+		end
     
     private
 
