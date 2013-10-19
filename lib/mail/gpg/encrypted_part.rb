@@ -88,6 +88,7 @@ module Mail
 						if k.count == 0 and options[:key_server]
 							k = Mail::Gpg.get_keys_from_pk_server(r, options)
 						end
+						k
           end.flatten
         else
 					# key lookup in keychain for all receivers
