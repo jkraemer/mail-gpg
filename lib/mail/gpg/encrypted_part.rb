@@ -33,7 +33,7 @@ module Mail
         plain_data  = GPGME::Data.new(plain)
         cipher_data = GPGME::Data.new(options[:output])
 
-        recipient_keys = keys_for_data options[:recipients], options.delete(:keys)
+        recipient_keys = keys_for_data options[:recipients], options.delete(:keys), options
 
         flags = 0
         flags |= GPGME::ENCRYPT_ALWAYS_TRUST if options[:always_trust]
@@ -64,7 +64,7 @@ module Mail
 
       # normalizes the list of recipients' emails, key ids and key data to a
       # list of Key objects
-      def keys_for_data(emails_or_shas_or_keys, key_data = nil)
+      def keys_for_data(emails_or_shas_or_keys, key_data = nil, options = {})
         if key_data
           [emails_or_shas_or_keys].flatten.map do |r|
             # import any given keys
@@ -72,11 +72,13 @@ module Mail
             if k and k =~ /-----BEGIN PGP/
               k = GPGME::Key.import(k).imports.map(&:fpr)
             end
-            GPGME::Key.find(:public, k || r, :encrypt)
+            k = GPGME::Key.find(:public, k || r, :encrypt)
           end.flatten
         else
-          # key lookup in keychain for all receivers
-          GPGME::Key.find :public, emails_or_shas_or_keys, :encrypt
+					# key lookup in keychain for all receivers
+					[emails_or_shas_or_keys].flatten.map do |r|
+						keys = GPGME::Key.find(:public, r, :encrypt)
+					end.flatten
         end
       end
 

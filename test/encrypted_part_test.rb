@@ -56,7 +56,7 @@ class EncryptedPartTest < Test::Unit::TestCase
         @key_fpr = GPGME::Key.find(:public, 'jane@foo.bar').first.fingerprint
       end
 
-      should 'resolve single id  gpg keys' do
+      should 'resolve single id to gpg keys' do
         assert keys = @part.send(:keys_for_data, @key_fpr)
         check_key_list keys
       end
@@ -77,6 +77,7 @@ class EncryptedPartTest < Test::Unit::TestCase
         assert keys = @part.send(:keys_for_data, @emails, @key_data)
         check_key_list keys
       end
+
     end
   end
 end

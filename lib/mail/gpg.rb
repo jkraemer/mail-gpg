@@ -11,6 +11,9 @@ require 'mail/gpg/rails'
 
 module Mail
   module Gpg
+
+		mattr_accessor :default_keyserver_url
+
     # options are:
     # :sign : sign message using the sender's private key
     # :sign_as : sign using this key (give the corresponding email address)
@@ -52,7 +55,6 @@ module Mail
       if (encrypted_mail.has_content_type? && 
           'multipart/encrypted' == encrypted_mail.mime_type &&
           'application/pgp-encrypted' == encrypted_mail.content_type_parameters[:protocol])
-         
          decrypt_pgp_mime(encrypted_mail, options)
       else
         raise EncodingError, "Unsupported encryption format '#{encrypted_mail.content_type}'"
