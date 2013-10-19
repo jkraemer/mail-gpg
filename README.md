@@ -109,7 +109,6 @@ around with your personal gpg keychain.
 
 ## Todo
 
-* Signing of unencrypted mails
 * Decryption and signature verification for received mails
 * on the fly import of recipients' keys from public key servers based on email address or key id
 * handle encryption errors due to missing keys - maybe return a list of failed
