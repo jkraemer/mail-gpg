@@ -11,6 +11,9 @@ require 'mail/gpg/rails'
 
 module Mail
   module Gpg
+
+		mattr_accessor :default_keyserver_url
+
     # options are:
     # :sign : sign message using the sender's private key
     # :sign_as : sign using this key (give the corresponding email address)
@@ -52,7 +55,6 @@ module Mail
       if (encrypted_mail.has_content_type? && 
           'multipart/encrypted' == encrypted_mail.mime_type &&
           'application/pgp-encrypted' == encrypted_mail.content_type_parameters[:protocol])
-         
          decrypt_pgp_mime(encrypted_mail, options)
       else
         raise EncodingError, "Unsupported encryption format '#{encrypted_mail.content_type}'"
@@ -62,17 +64,14 @@ module Mail
 		def self.get_keyserver_url(options = {})
 			url = options[:key_server]
 			if url.blank?
-				res = `gpgconf --list-options gpgs 2>&1 | grep keyserver 2>&1` 
-				if $?.exitstatus == 0
+				if default_keyserver_url.present?
+					url = default_keyserver_url
+				elsif res = exec_cmd("gpgconf --list-options gpgs 2>&1 | grep keyserver 2>&1")
 					url = URI.decode(res.split(":").last.split("\"").last.strip)
-				else
-					res = `gpg --gpgconf-list 2>&1 | grep gpgconf-gpg.conf 2>&1`
-					if $?.exitstatus == 0
-						conf_file = res.split(":").last.split("\"").last.strip
-						res = `cat #{conf_file} 2>&1 | grep ^keyserver 2>&1`
-						if $?.exitstatus == 0
-							url = res.split(" ").last.strip
-						end
+				elsif res = exec_cmd("gpg --gpgconf-list 2>&1 | grep gpgconf-gpg.conf 2>&1")
+					conf_file = res.split(":").last.split("\"").last.strip
+					if res = exec_cmd("cat #{conf_file} 2>&1 | grep ^keyserver 2>&1")
+						url = res.split(" ").last.strip
 					end
 				end
 			end
@@ -96,6 +95,12 @@ module Mail
 		end
     
     private
+
+		def self.exec_cmd(cmd)
+			res = `#{cmd}`
+			return nil if $?.exitstatus != 0
+			res
+		end
 
     # decrypts PGP/MIME (RFC 3156, section 4) encrypted mail
     def self.decrypt_pgp_mime(encrypted_mail, options)
