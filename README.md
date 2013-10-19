@@ -74,6 +74,7 @@ updating it's db when necessary.
 
 You may also want to have a look at the [GPGME](https://github.com/ueno/ruby-gpgme) docs and code base for more info on the various options, especially regarding the `passphrase_callback` arguments.
 
+
 ### Signing only
 
 This is not implemented yet
@@ -114,6 +115,7 @@ Mail::Gpg.default_keyserver_url = 'hkp://keys.gnupg.net'
 
 This setting will be preferred to the system's gpg config.
 
+
 ## Rails / ActionMailer integration
 
     class MyMailer < ActionMailer::Base
@@ -136,7 +138,9 @@ around with your personal gpg keychain.
 
 ## Todo
 
+* Signing of unencrypted mails
 * Decryption and signature verification for received mails
+* on the fly import of recipients' keys from public key servers based on email address or key id
 * handle encryption errors due to missing keys - maybe return a list of failed
   recipients
 * add some setup code to help initialize a basic keychain directory with
