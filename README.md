@@ -77,7 +77,14 @@ You may also want to have a look at the [GPGME](https://github.com/ueno/ruby-gpg
 
 ### Signing only
 
-This is not implemented yet
+Just leave the the `:encrypt` option out or pass `encrypt: false`, i.e.
+
+`
+Mail.new do
+	to 'jane@doe.net'
+	gpg sign: true
+end.deliver 
+`
 
 
 ## Rails / ActionMailer integration
@@ -102,7 +109,6 @@ around with your personal gpg keychain.
 
 ## Todo
 
-* Signing of unencrypted mails
 * Decryption and signature verification for received mails
 * on the fly import of recipients' keys from public key servers based on email address or key id
 * handle encryption errors due to missing keys - maybe return a list of failed
