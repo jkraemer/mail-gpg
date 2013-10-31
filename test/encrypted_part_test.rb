@@ -34,19 +34,6 @@ class EncryptedPartTest < Test::Unit::TestCase
         check_key_list keys
       end
 
-			context 'with keyserver' do
-				setup do
-					@emails = ['john@foo.bar']
-					@options = {key_server: "hkp://0.0.0.0"}	
-				end
-
-				should 'try to look up unknown key on keyserver' do
-					assert_raise(Errno::ECONNREFUSED) do
-						@part.send(:keys_for_data, @emails, nil, @options)
-					end
-				end
-			end
-
     end
 
     context 'with key id' do
@@ -90,19 +77,6 @@ class EncryptedPartTest < Test::Unit::TestCase
         assert keys = @part.send(:keys_for_data, @emails, @key_data)
         check_key_list keys
       end
-
-			context 'with keyserver' do
-				setup do
-					@emails = ['john@foo.bar']
-					@options = {key_server: "hkp://0.0.0.0"}	
-				end
-
-				should 'try to look up unknown key on keyserver' do
-					assert_raise(Errno::ECONNREFUSED) do
-						@part.send(:keys_for_data, @emails, nil, @options)
-					end
-				end
-			end
 
     end
   end

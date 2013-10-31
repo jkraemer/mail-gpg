@@ -62,18 +62,6 @@ module Mail
         cipher_data
       end
 
-			def keys_from_external(email_or_sha)
-				puts "Loading key from server: #{email_or_sha}"
-
-				keys = GPGME::Ctx.new(keylist_mode: GPGME::KEYLIST_MODE_EXTERN) do |ctx|
-					ctx.keys(email_or_sha, false).select do |key|
-						key.usable_for?(:encrypt)
-					end		
-				end
-				keys.each{|key| GPGME::Key.import(key.export)}
-				keys
-			end
-
       # normalizes the list of recipients' emails, key ids and key data to a
       # list of Key objects
       def keys_for_data(emails_or_shas_or_keys, key_data = nil, options = {})
@@ -85,19 +73,11 @@ module Mail
               k = GPGME::Key.import(k).imports.map(&:fpr)
             end
             k = GPGME::Key.find(:public, k || r, :encrypt)
-						if k.count == 0 and options[:key_server]
-							k = Mail::Gpg.get_keys_from_pk_server(r, options)
-						end
-						k
           end.flatten
         else
 					# key lookup in keychain for all receivers
 					[emails_or_shas_or_keys].flatten.map do |r|
 						keys = GPGME::Key.find(:public, r, :encrypt)
-						if keys.count == 0 and options[:key_server]
-							keys = Mail::Gpg.get_keys_from_pk_server(r, options)
-						end
-						keys
 					end.flatten
         end
       end

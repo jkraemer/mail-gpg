@@ -36,48 +36,6 @@ class GpgTest < Test::Unit::TestCase
     end
   end
 
-	context "gpg keyserver url detection" do
-
-		context "with keyserver url specified" do
-
-			setup do
-				@options = {key_server: "hkp://my-key-server.net"}
-			end
-
-			should "return specified keyserver url" do
-				assert url = Mail::Gpg.get_keyserver_url(@options)
-				assert_equal "hkp://my-key-server.net", url
-			end
-
-		end
-
-		context "with default keyserver url" do
-
-			setup do
-				Mail::Gpg.default_keyserver_url = "hkp://my-key-server.net"
-			end
-
-			should "return default keyserver url" do
-				assert url = Mail::Gpg.get_keyserver_url(@options)
-				assert_equal "hkp://my-key-server.net", url
-			end
-
-			context "with keyserver url specified" do
-
-				setup do
-					@options = {key_server: "hkp://my-other-key-server.net"}
-				end
-
-				should "return specified keyserver url" do
-					assert url = Mail::Gpg.get_keyserver_url(@options)
-					assert_equal "hkp://my-other-key-server.net", url
-				end
-
-			end
-		end
-
-	end
-
   context "gpg encrypted" do
 
     setup do

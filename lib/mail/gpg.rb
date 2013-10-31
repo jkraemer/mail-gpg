@@ -60,47 +60,8 @@ module Mail
         raise EncodingError, "Unsupported encryption format '#{encrypted_mail.content_type}'"
       end
     end
-
-		def self.get_keyserver_url(options = {})
-			url = TrueClass === options[:key_server] ? nil : options[:key_server]
-			if url.blank?
-				if default_keyserver_url.present?
-					url = default_keyserver_url
-				elsif res = exec_cmd("gpgconf --list-options gpgs 2>&1 | grep keyserver 2>&1")
-					url = URI.decode(res.split(":").last.split("\"").last.strip)
-				elsif res = exec_cmd("gpg --gpgconf-list 2>&1 | grep gpgconf-gpg.conf 2>&1")
-					conf_file = res.split(":").last.split("\"").last.strip
-					if res = exec_cmd("cat #{conf_file} 2>&1 | grep ^keyserver 2>&1")
-						url = res.split(" ").last.strip
-					end
-				end
-			end
-			url
-		end
-
-		def self.get_keys_from_pk_server(email_or_sha, options = {})
-			require 'net/http'
-			return [] unless url = get_keyserver_url(options)
-			uri = URI.parse("#{url}/pks/lookup?op=get&options=mr&search=#{URI.encode(email_or_sha)}")
-			req = Net::HTTP::Get.new(uri.to_s)
-			res = Net::HTTP.start(uri.host, 11371) do |http|
-				http.request req
-			end
-			if res.code =~ /200/
-				fprs = GPGME::Key.import(res.body).imports.map(&:fpr)
-				GPGME::Key.find(:public, fprs, :encrypt)
-			else
-				[]
-			end
-		end
     
     private
-
-		def self.exec_cmd(cmd)
-			res = `#{cmd}`
-			return nil if $?.exitstatus != 0
-			res
-		end
 
     # decrypts PGP/MIME (RFC 3156, section 4) encrypted mail
     def self.decrypt_pgp_mime(encrypted_mail, options)

@@ -3,9 +3,22 @@ require 'gpgme'
 
 # simple HKP client for public key retrieval
 class Hkp
-  def initialize(keyserver = 'http://pool.sks-keyservers.net:11371')
-    @keyserver = keyserver
+  def initialize(keyserver = nil)
+    @keyserver = keyserver || lookup_keyserver || 'http://pool.sks-keyservers.net:11371'
   end
+
+	def lookup_keyserver
+		url = nil
+		if res = exec_cmd("gpgconf --list-options gpgs 2>&1 | grep keyserver 2>&1")
+			url = URI.decode(res.split(":").last.split("\"").last.strip)
+		elsif res = exec_cmd("gpg --gpgconf-list 2>&1 | grep gpgconf-gpg.conf 2>&1")
+			conf_file = res.split(":").last.split("\"").last.strip
+			if res = exec_cmd("cat #{conf_file} 2>&1 | grep ^keyserver 2>&1")
+				url = res.split(" ").last.strip
+			end
+		end
+		url =~ /^(http|hkp)/ ? url : nil
+	end
 
   # hkp.search 'user@host.com'
   # will return an array of arrays, one for each matching key found, containing
@@ -49,5 +62,11 @@ class Hkp
       return $1
     end
   end
+
+	def exec_cmd(cmd)
+		res = `#{cmd}`
+		return nil if $?.exitstatus != 0
+		res
+	end
 
 end
