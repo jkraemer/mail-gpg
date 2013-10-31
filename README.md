@@ -81,40 +81,33 @@ This is not implemented yet
 
 ### Key import from public key servers
 
-When encrypting emails, public encryption keys can automatically be downloaded 
-and imported from a public key server.
-
-To enable automatic key lookup, pass the `:key_server` option.
+The Hkp class can be used to lookup and import public keys from public key servers.
+You can specify the keyserver url when initializing the class:
 
 ```
-Mail.new do
-	to 'jane@doe.net'
-	gpg encrypt: true, key_server: true
-end
+hkp = Hkp.new("hkp://my-key-server.de")
 ```
 
-The mailer will try to determine the keyserver url set from the system's gpg config
-via the `gpgconf` command if installed. If not, it will then try to  look up the
-url in the gpg.conf file (typically ~/.gnupg/gpg.conf).
+If no url is given, this gem will try to determine the default keyserver
+url from the system's gpg config (using `gpgconf` if available or by
+parsing the `gpg.conf` file). As a last resort, the server-pool at
+`http://pool.sks-keyservers.net:11371` will be used.
 
-You can also specify the keyserver to be used:
-
-```
-Mail.new do
-	to 'jane@doe.net'
-	gpg encrypt: true, key_server: 'hkp://keys.gnupg.net'
-end
-``` 
-
-Furthermore you can specify the default keyserver by setting the GPG module's
-`default_keyserver_url` attribute (i.e. in an initializer):
+Lookup key ids by searching the keyserver for an email address
 
 ```
-Mail::Gpg.default_keyserver_url = 'hkp://keys.gnupg.net'
+hkp.search('jane@doe.net')
 ```
 
-This setting will be preferred to the system's gpg config.
+You can lookup (and import) a specific key by its id:
 
+```
+key = hkp.fetch(id)
+GPGME::Key.import(key)
+
+# or do both in one step
+hkp.fetch_and_import(id)
+```
 
 ## Rails / ActionMailer integration
 
