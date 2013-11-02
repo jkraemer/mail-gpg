@@ -54,16 +54,19 @@ module Mail
 		end
 
     def self.decrypt(encrypted_mail, options = {})
-      if (encrypted_mail.has_content_type? && 
-          'multipart/encrypted' == encrypted_mail.mime_type &&
-          'application/pgp-encrypted' == encrypted_mail.content_type_parameters[:protocol])
-         
+      if (encrypted?(encrypted_mail))
          decrypt_pgp_mime(encrypted_mail, options)
       else
         raise EncodingError, "Unsupported encryption format '#{encrypted_mail.content_type}'"
       end
     end
     
+    def self.encrypted?(mail)
+      mail.has_content_type? &&
+        'multipart/encrypted' == mail.mime_type &&
+        'application/pgp-encrypted' == mail.content_type_parameters[:protocol]
+    end
+
     private
 
 		def self.construct_mail(cleartext_mail, options, &block)	

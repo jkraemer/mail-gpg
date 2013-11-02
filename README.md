@@ -75,6 +75,24 @@ updating it's db when necessary.
 You may also want to have a look at the [GPGME](https://github.com/ueno/ruby-gpgme) docs and code base for more info on the various options, especially regarding the `passphrase_callback` arguments.
 
 
+### Decrypting
+
+Receive the mail as usual. Check if it is encrypted using the `encrypted?` method. Get a decrypted version of the mail with the `decrypt` method:
+
+```ruby
+mail = Mail.first
+mail.subject # subject is never encrypted
+if mail.encrypted?
+  # decrypt using your private key, protected by the given passphrase
+  plaintext_mail = mail.decrypt(:password => 'abc')
+  # the plaintext_mail, is a full Mail::Message object, just decrypted
+end
+```
+
+A `GPGME::Error::BadPassphrase` will be raised if the password for the private key is incorrect.
+A `EncodingError` will be raised if the encrypted mails is not encoded correctly as a [RFC 3156](http://www.ietf.org/rfc/rfc3156.txt) message.
+
+
 ### Signing only
 
 Just leave the the `:encrypt` option out or pass `encrypt: false`, i.e.
