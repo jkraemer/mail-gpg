@@ -3,6 +3,13 @@
 This gem adds GPG/MIME encryption capabilities to the [Ruby Mail
 Library](https://github.com/mikel/mail)
 
+For maximum interoperability the gem also supports *decryption* of messages using the non-standard 'PGP-Inline' method
+as for example supported in the Mozilla Enigmail OpenPGP plugin.
+
+There may still be GPG encrypted messages that can not be handled by the library, as there are some legacy formats used in the
+wild as described in this [Know your PGP implementation](http://binblog.info/2008/03/12/know-your-pgp-implementation/) blog.
+
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -127,7 +134,7 @@ around with your personal gpg keychain.
 
 ## Todo
 
-* Decryption and signature verification for received mails
+* signature verification for received mails
 * on the fly import of recipients' keys from public key servers based on email address or key id
 * handle encryption errors due to missing keys - maybe return a list of failed
   recipients
