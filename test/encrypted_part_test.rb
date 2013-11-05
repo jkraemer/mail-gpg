@@ -25,12 +25,12 @@ class EncryptedPartTest < Test::Unit::TestCase
       end
 
       should 'resolve email to gpg keys' do
-        assert keys = @part.send(:keys_for_data, @email)
+        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, @email)
         check_key_list keys
       end
 
       should 'resolve emails to gpg keys' do
-        assert keys = @part.send(:keys_for_data, [@email])
+        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, [@email])
         check_key_list keys
       end
 
@@ -42,11 +42,11 @@ class EncryptedPartTest < Test::Unit::TestCase
       end
 
       should 'resolve single id  gpg keys' do
-        assert keys = @part.send(:keys_for_data, @key_id)
+        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, @key_id)
         check_key_list keys
       end
       should 'resolve id list to gpg keys' do
-        assert keys = @part.send(:keys_for_data, [@key_id])
+        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, [@key_id])
         check_key_list keys
       end
     end
@@ -57,11 +57,11 @@ class EncryptedPartTest < Test::Unit::TestCase
       end
 
       should 'resolve single id  gpg keys' do
-        assert keys = @part.send(:keys_for_data, @key_fpr)
+        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, @key_fpr)
         check_key_list keys
       end
       should 'resolve id list to gpg keys' do
-        assert keys = @part.send(:keys_for_data, [@key_fpr])
+        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, [@key_fpr])
         check_key_list keys
       end
     end
@@ -74,7 +74,7 @@ class EncryptedPartTest < Test::Unit::TestCase
       end
 
       should 'resolve to gpg keys' do
-        assert keys = @part.send(:keys_for_data, @emails, @key_data)
+        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, @emails, @key_data)
         check_key_list keys
       end
     end

@@ -51,6 +51,14 @@ module Mail
         end
       end
 
+      def encrypted?
+        Mail::Gpg.encrypted?(self)
+      end
+
+      def decrypt(options = {})
+        Mail::Gpg.decrypt(self, options)
+      end
+
     end
   end
 end

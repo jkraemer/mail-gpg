@@ -23,7 +23,17 @@ class MessageTest < Test::Unit::TestCase
         assert_equal 1, @mails.size
         assert m = @mails.first
         assert_equal 'test', m.subject
+        assert !m.encrypted?
         assert_equal 'i am unencrypted', m.body.to_s
+      end
+
+      should "raise encoding error" do
+        assert_equal 1, @mails.size
+        assert m = @mails.first
+        assert_equal 'test', m.subject
+        assert_raises(EncodingError){
+          m.decrypt(:password => 'abc')
+        }
       end
     end
 
@@ -41,6 +51,7 @@ class MessageTest < Test::Unit::TestCase
           assert_equal 1, @mails.size
           assert m = @mails.first
           assert_equal 'test', m.subject
+          assert !m.encrypted?
           assert m.multipart?
           assert sign_part = m.parts.last
           assert m = Mail::Message.new(m.parts.last)
@@ -85,11 +96,36 @@ class MessageTest < Test::Unit::TestCase
           assert m = @mails.first
           assert_equal 'test', m.subject
           assert m.multipart?
+          assert m.encrypted?
           assert enc_part = m.parts.last
           assert clear = GPGME::Crypto.new.decrypt(enc_part.body.to_s, password: 'abc').to_s
           assert m = Mail::Message.new(clear)
           assert !m.multipart?
           assert_equal 'i am unencrypted', m.body.to_s
+        end
+
+        should "decrypt" do
+          assert_equal 1, @mails.size
+          assert m = @mails.first
+          assert_equal 'test', m.subject
+          assert m.multipart?
+          assert m.encrypted?
+          assert decrypted = m.decrypt(:password => 'abc')
+          assert decrypted == @mail
+        end
+
+        should "raise bad passphrase on decrypt" do
+          assert_equal 1, @mails.size
+          assert m = @mails.first
+          assert_equal 'test', m.subject
+          # incorrect passphrase
+          assert_raises(GPGME::Error::BadPassphrase){
+            m.decrypt(:password => 'incorrect')
+          }
+          # no passphrase
+          assert_raises(GPGME::Error::BadPassphrase){
+            m.decrypt
+          }
         end
       end
     end

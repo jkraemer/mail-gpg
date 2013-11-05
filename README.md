@@ -3,6 +3,13 @@
 This gem adds GPG/MIME encryption capabilities to the [Ruby Mail
 Library](https://github.com/mikel/mail)
 
+For maximum interoperability the gem also supports *decryption* of messages using the non-standard 'PGP-Inline' method
+as for example supported in the Mozilla Enigmail OpenPGP plugin.
+
+There may still be GPG encrypted messages that can not be handled by the library, as there are some legacy formats used in the
+wild as described in this [Know your PGP implementation](http://binblog.info/2008/03/12/know-your-pgp-implementation/) blog.
+
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -75,6 +82,24 @@ updating it's db when necessary.
 You may also want to have a look at the [GPGME](https://github.com/ueno/ruby-gpgme) docs and code base for more info on the various options, especially regarding the `passphrase_callback` arguments.
 
 
+### Decrypting
+
+Receive the mail as usual. Check if it is encrypted using the `encrypted?` method. Get a decrypted version of the mail with the `decrypt` method:
+
+```ruby
+mail = Mail.first
+mail.subject # subject is never encrypted
+if mail.encrypted?
+  # decrypt using your private key, protected by the given passphrase
+  plaintext_mail = mail.decrypt(:password => 'abc')
+  # the plaintext_mail, is a full Mail::Message object, just decrypted
+end
+```
+
+A `GPGME::Error::BadPassphrase` will be raised if the password for the private key is incorrect.
+A `EncodingError` will be raised if the encrypted mails is not encoded correctly as a [RFC 3156](http://www.ietf.org/rfc/rfc3156.txt) message.
+
+
 ### Signing only
 
 Just leave the the `:encrypt` option out or pass `encrypt: false`, i.e.
@@ -109,7 +134,7 @@ around with your personal gpg keychain.
 
 ## Todo
 
-* Decryption and signature verification for received mails
+* signature verification for received mails
 * on the fly import of recipients' keys from public key servers based on email address or key id
 * handle encryption errors due to missing keys - maybe return a list of failed
   recipients

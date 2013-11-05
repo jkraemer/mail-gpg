@@ -6,6 +6,8 @@ require 'mail/gpg/version'
 require 'mail/gpg/version_part'
 require 'mail/gpg/decrypted_part'
 require 'mail/gpg/encrypted_part'
+require 'mail/gpg/inline_decrypted_message'
+require 'mail/gpg/gpgme_helper'
 require 'mail/gpg/message_patch'
 require 'mail/gpg/rails'
 require 'mail/gpg/sign_part'
@@ -54,16 +56,21 @@ module Mail
 		end
 
     def self.decrypt(encrypted_mail, options = {})
-      if (encrypted_mail.has_content_type? && 
-          'multipart/encrypted' == encrypted_mail.mime_type &&
-          'application/pgp-encrypted' == encrypted_mail.content_type_parameters[:protocol])
-         
-         decrypt_pgp_mime(encrypted_mail, options)
+      if encrypted_mime?(encrypted_mail)
+        decrypt_pgp_mime(encrypted_mail, options)
+      elsif encrypted_inline?(encrypted_mail)
+        decrypt_pgp_inline(encrypted_mail, options)
       else
         raise EncodingError, "Unsupported encryption format '#{encrypted_mail.content_type}'"
       end
     end
     
+    def self.encrypted?(mail)
+      return true if encrypted_mime?(mail)
+      return true if encrypted_inline?(mail)
+      false
+    end
+
     private
 
 		def self.construct_mail(cleartext_mail, options, &block)	
@@ -79,7 +86,6 @@ module Mail
 			end
 		end
 
-
     # decrypts PGP/MIME (RFC 3156, section 4) encrypted mail
     def self.decrypt_pgp_mime(encrypted_mail, options)
       # MUST containt exactly two body parts
@@ -90,6 +96,33 @@ module Mail
         raise EncodingError, "RFC 3136 first part not a valid version part '#{encrypted_mail.parts[0]}'"
       end
       Mail.new(DecryptedPart.new(encrypted_mail.parts[1], options))
+    end
+
+    # decrypts inline PGP encrypted mail
+    def self.decrypt_pgp_inline(encrypted_mail, options)
+      InlineDecryptedMessage.new(encrypted_mail, options)
+    end
+
+    # check if PGP/MIME (RFC 3156)
+    def self.encrypted_mime?(mail)
+      mail.has_content_type? &&
+        'multipart/encrypted' == mail.mime_type &&
+        'application/pgp-encrypted' == mail.content_type_parameters[:protocol]
+    end
+
+    # check if inline PGP (i.e. if any parts of the mail includes
+    # the PGP MESSAGE marker
+    def self.encrypted_inline?(mail)
+      return true if mail.body.include?('-----BEGIN PGP MESSAGE-----')
+      if mail.multipart?
+        mail.parts.each do |part|
+          return true if part.body.include?('-----BEGIN PGP MESSAGE-----')
+          return true if part.has_content_type? &&
+            /application\/(?:octet-stream|pgp-encrypted)/ =~ part.mime_type &&
+            /.*\.(?:pgp|gpg|asc)$/ =~ part.content_type_parameters[:name]
+        end
+      end
+      false
     end
   end
 end
