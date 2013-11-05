@@ -2,6 +2,13 @@ require 'test_helper'
 require 'mail/gpg/encrypted_part'
 
 class EncryptedPartTest < Test::Unit::TestCase
+
+  def check_key_list(keys)
+    assert_equal 1, keys.size
+    assert_equal GPGME::Key, keys.first.class
+    assert_equal 'jane@foo.bar', keys.first.email
+  end
+
   context 'EncryptedPart' do
     setup do
       mail = Mail.new do
@@ -11,12 +18,6 @@ class EncryptedPartTest < Test::Unit::TestCase
         body 'i am unencrypted'
       end
       @part = Mail::Gpg::EncryptedPart.new(mail)
-    end
-
-    def check_key_list(keys)
-      assert_equal 1, keys.size
-      assert_equal GPGME::Key, keys.first.class
-      assert_equal 'jane@foo.bar', keys.first.email
     end
 
     context 'with email address' do
