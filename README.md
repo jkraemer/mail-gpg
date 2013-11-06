@@ -111,6 +111,35 @@ Just leave the the `:encrypt` option out or pass `encrypt: false`, i.e.
     end.deliver 
 
 
+### Key import from public key servers
+
+The Hkp class can be used to lookup and import public keys from public key servers.
+You can specify the keyserver url when initializing the class:
+
+```
+hkp = Hkp.new("hkp://my-key-server.de")
+```
+
+If no url is given, this gem will try to determine the default keyserver
+url from the system's gpg config (using `gpgconf` if available or by
+parsing the `gpg.conf` file). As a last resort, the server-pool at
+`http://pool.sks-keyservers.net:11371` will be used.
+
+Lookup key ids by searching the keyserver for an email address
+
+```
+hkp.search('jane@doe.net')
+```
+
+You can lookup (and import) a specific key by its id:
+
+```
+key = hkp.fetch(id)
+GPGME::Key.import(key)
+
+# or do both in one step
+hkp.fetch_and_import(id)
+```
 
 ## Rails / ActionMailer integration
 
