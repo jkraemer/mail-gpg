@@ -95,7 +95,17 @@ module Mail
       if !VersionPart.isVersionPart? encrypted_mail.parts[0]
         raise EncodingError, "RFC 3136 first part not a valid version part '#{encrypted_mail.parts[0]}'"
       end
-      Mail.new(DecryptedPart.new(encrypted_mail.parts[1], options))
+      Mail.new(DecryptedPart.new(encrypted_mail.parts[1], options)) do
+        %w(from to cc bcc subject reply_to in_reply_to).each do |field|
+          send field, encrypted_mail.send(field)
+        end
+        # copy header fields
+        # headers from the encrypted part (which are already set by Mail.new
+        # above) will be preserved.
+        encrypted_mail.header.fields.each do |field|
+          header[field.name] = field.value if field.name =~ /^X-/ && header[field.name].nil?
+        end
+      end
     end
 
     # decrypts inline PGP encrypted mail
