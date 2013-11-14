@@ -28,20 +28,20 @@ class GpgTest < Test::Unit::TestCase
     assert_equal mail.to_s, clear
   end
 
-	def check_signature(mail = @mail, signed = @signed)
-		assert signature = signed.parts.detect{|p| p.content_type =~ /signature\.asc/}.body.to_s
-		GPGME::Crypto.new.verify(signature, signed_text: mail.encoded) do |sig| 
-			assert true == sig.valid?
-		end
-	end
+  def check_signature(mail = @mail, signed = @signed)
+    assert signature = signed.parts.detect{|p| p.content_type =~ /signature\.asc/}.body.to_s
+    GPGME::Crypto.new.verify(signature, signed_text: mail.encoded) do |sig|
+      assert true == sig.valid?
+    end
+  end
 
-	def check_mime_structure_signed(mail = @mail, signed = @signed)
-		assert_equal 2, signed.parts.size
-		sign_part, orig_part = signed.parts	
+  def check_mime_structure_signed(mail = @mail, signed = @signed)
+    assert_equal 2, signed.parts.size
+    sign_part, orig_part = signed.parts
 
-		assert_equal 'application/pgp-signature; name=signature.asc', sign_part.content_type
-		assert_equal orig_part.content_type, @mail.content_type
-	end
+    assert_equal 'application/pgp-signature; name=signature.asc', sign_part.content_type
+    assert_equal orig_part.content_type, @mail.content_type
+  end
 
   def check_headers_signed(mail = @mail, signed = @signed)
     assert_equal mail.to, signed.to
@@ -57,33 +57,33 @@ class GpgTest < Test::Unit::TestCase
     end
   end
 
-	context "gpg signed" do
-		setup do
-			@mail = Mail.new do
-				to 'joe@foo.bar'
-				from 'jane@foo.bar'
-				subject 'test test'
-				body 'sign me!'
-			end
-		end
+  context "gpg signed" do
+    setup do
+      @mail = Mail.new do
+        to 'joe@foo.bar'
+        from 'jane@foo.bar'
+        subject 'test test'
+        body 'sign me!'
+      end
+    end
 
-		context 'simple mail' do
-			setup do
-				@signed = Mail::Gpg.sign(@mail, password: 'abc')
-			end
+    context 'simple mail' do
+      setup do
+        @signed = Mail::Gpg.sign(@mail, password: 'abc')
+      end
 
-			should 'have same recipients and subject' do
-				check_headers_signed
-			end
+      should 'have same recipients and subject' do
+        check_headers_signed
+      end
 
-			should 'have proper gpgmime structure' do
-				check_mime_structure_signed
-			end
+      should 'have proper gpgmime structure' do
+        check_mime_structure_signed
+      end
 
-			should 'have correct signature' do
-				check_signature
-			end
-		end
+      should 'have correct signature' do
+        check_signature
+      end
+    end
 
     context 'mail with custom header' do
       setup do
@@ -153,7 +153,7 @@ class GpgTest < Test::Unit::TestCase
         assert_match /Rakefile/, original_part.parts.last.content_disposition
       end
     end
-	end
+  end
 
   context "gpg encrypted" do
 
@@ -188,7 +188,7 @@ class GpgTest < Test::Unit::TestCase
         assert mail == @mail
       end
     end
-    
+
     context 'simple mail (signed)' do
       setup do
         @encrypted = Mail::Gpg.encrypt(@mail, { :sign => true, :password => 'abc' })
@@ -210,7 +210,7 @@ class GpgTest < Test::Unit::TestCase
         assert mail = Mail::Gpg.decrypt(@encrypted, { :verify => true, :password => 'abc' })
         assert mail == @mail
       end
-    end    
+    end
 
     context 'mail with custom header' do
       setup do
@@ -295,7 +295,7 @@ class GpgTest < Test::Unit::TestCase
         assert_match /encrypt me/, m.parts.first.body.to_s
         assert_match /Rakefile/, m.parts.last.content_disposition
       end
-      
+
       should 'decrypt' do
         assert mail = Mail::Gpg.decrypt(@encrypted, { :password => 'abc' })
         assert mail == @mail

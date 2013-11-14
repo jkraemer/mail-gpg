@@ -10,7 +10,7 @@ module Mail
             if options.delete(:encrypt)
               encrypted_mail = Mail::Gpg.encrypt(mail, options)
             elsif options[:sign] || options[:sign_as]
-							encrypted_mail = Mail::Gpg.sign(mail, options)
+              encrypted_mail = Mail::Gpg.sign(mail, options)
             else
               # encrypt and sign are off -> do not encrypt or sign
               yield

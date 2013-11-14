@@ -20,18 +20,18 @@ class DecryptedPartTest < Test::Unit::TestCase
       assert mail.message_id == @mail.message_id
       assert mail.message_id != @part.message_id
     end
-    
+
     should 'decrypt and verify' do
       assert mail = Mail::Gpg::DecryptedPart.new(@part, { :verify => true, :password => 'abc' })
       assert mail == @mail
       assert mail.message_id == @mail.message_id
       assert mail.message_id != @part.message_id
     end
-    
+
     should 'raise encoding error for non gpg mime type' do
       part = Mail::Part.new(@part)
       part.content_type = 'text/plain'
       assert_raise(EncodingError) { Mail::Gpg::DecryptedPart.new(part) }
-    end    
+    end
   end
 end
