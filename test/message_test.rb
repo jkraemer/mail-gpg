@@ -111,7 +111,9 @@ class MessageTest < Test::Unit::TestCase
           assert m.multipart?
           assert m.encrypted?
           assert decrypted = m.decrypt(:password => 'abc')
+          assert_equal 'test', decrypted.subject
           assert decrypted == @mail
+          assert_equal 'i am unencrypted', decrypted.body.to_s
         end
 
         should "raise bad passphrase on decrypt" do

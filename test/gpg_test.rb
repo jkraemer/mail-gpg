@@ -216,6 +216,7 @@ class GpgTest < Test::Unit::TestCase
       setup do
         @mail.header['X-Custom-Header'] = 'custom value'
         @encrypted = Mail::Gpg.encrypt(@mail)
+        @encrypted.header['X-Another-Header'] = 'another value'
       end
 
       should 'have same recipients and subject' do
@@ -233,11 +234,26 @@ class GpgTest < Test::Unit::TestCase
       should 'preserve customer header values' do
         assert_equal 'custom value', @encrypted.header['X-Custom-Header'].to_s
       end
-      
-      should 'decrypt' do
-        assert mail = Mail::Gpg.decrypt(@encrypted, { :password => 'abc' })
-        assert mail == @mail
+
+      context 'when decrypted' do
+        setup do
+          @decrypted_mail = Mail::Gpg.decrypt(@encrypted, { :password => 'abc' })
+        end
+
+        should 'have same subject and body as the original' do
+          assert_equal @mail.subject, @decrypted_mail.subject
+          assert_equal @mail.body.to_s, @decrypted_mail.body.to_s
+        end
+
+        should 'preserve custom header from encrypted inner mail' do
+          assert_equal 'custom value', @decrypted_mail.header['X-Custom-Header'].to_s
+        end
+
+        should 'preserve custom header from outer mail' do
+          assert_equal 'another value', @decrypted_mail.header['X-Another-Header'].to_s
+        end
       end
+
     end
 
     context 'mail with multiple recipients' do
