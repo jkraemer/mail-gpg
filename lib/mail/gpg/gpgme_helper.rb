@@ -18,7 +18,7 @@ module Mail
           begin
             if options[:sign]
               if options[:signers]
-                signers = GPGME::Key.find(:public, options[:signers], :sign)
+                signers = GPGME::Key.find(:secret, options[:signers], :sign)
                 ctx.add_signer(*signers)
               end
               ctx.encrypt_sign(recipient_keys, plain_data, cipher_data, flags)
