@@ -15,13 +15,13 @@ require 'mail/gpg/sign_part'
 module Mail
   module Gpg
     # options are:
-    # :sign : sign message using the sender's private key
-    # :sign_as : sign using this key (give the corresponding email address)
+    # :sign: sign message using the sender's private key
+    # :sign_as: sign using this key (give the corresponding email address or key fingerprint)
     # :passphrase: passphrase for the signing key
-    # :keys : A hash mapping recipient email addresses to public keys or public
+    # :keys: A hash mapping recipient email addresses to public keys or public
     # key ids. Imports any keys given here that are not already part of the
     # local keychain before sending the mail.
-    # :always_trust : send encrypted mail to untrusted receivers, true by default
+    # :always_trust: send encrypted mail to untrusted receivers, true by default
     def self.encrypt(cleartext_mail, options = {})
       construct_mail(cleartext_mail, options) do
         receivers = []

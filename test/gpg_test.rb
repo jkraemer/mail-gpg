@@ -52,8 +52,15 @@ class GpgTest < Test::Unit::TestCase
 
   context "gpg installation" do
     should "have keys for jane and joe" do
-      assert joe = GPGME::Key.find(:public, 'joe@foo.bar').first
-      assert jane = GPGME::Key.find(:public, 'jane@foo.bar').first
+      assert joe = GPGME::Key.find(:public, 'joe@foo.bar')
+      assert_equal 1, joe.size
+      joe = joe.first
+      assert jane = GPGME::Key.find(:public, 'jane@foo.bar')
+      assert_equal 1, jane.size
+      jane = jane.first
+      assert id = jane.fingerprint
+      assert jane = GPGME::Key.find(:public, id).first
+      assert_equal id, jane.fingerprint
     end
   end
 
