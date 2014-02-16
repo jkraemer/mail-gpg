@@ -52,13 +52,28 @@ class MessageTest < Test::Unit::TestCase
           assert m = @mails.first
           assert_equal 'test', m.subject
           assert !m.encrypted?
+          assert m.signed?
           assert m.multipart?
+          assert m.signature_valid?
           assert sign_part = m.parts.last
-          assert m = Mail::Message.new(m.parts.last)
+          assert m = Mail::Message.new(m.parts.first)
           assert !m.multipart?
-          GPGME::Crypto.new.verify(sign_part.body.to_s, signed_text: @mail.encoded) do |sig| 
+          GPGME::Crypto.new.verify(sign_part.body.to_s, signed_text: m.encoded) do |sig| 
             assert true == sig.valid?
           end
+          assert_equal 'i am unencrypted', m.body.to_s
+        end
+
+        should "fail signature on tampered body" do
+          assert_equal 1, @mails.size
+          assert m = @mails.first
+          assert_equal 'test', m.subject
+          assert !m.encrypted?
+          assert m.signed?
+          assert m.multipart?
+          assert m.signature_valid?
+          m.parts.first.body = 'replaced body'
+          assert !m.signature_valid?
         end
       end
     end

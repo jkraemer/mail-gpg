@@ -29,15 +29,17 @@ class GpgTest < Test::Unit::TestCase
   end
 
   def check_signature(mail = @mail, signed = @signed)
+    assert signed.signed?
     assert signature = signed.parts.detect{|p| p.content_type =~ /signature\.asc/}.body.to_s
     GPGME::Crypto.new.verify(signature, signed_text: mail.encoded) do |sig|
       assert true == sig.valid?
     end
+    assert Mail::Gpg.signature_valid?(signed)
   end
 
   def check_mime_structure_signed(mail = @mail, signed = @signed)
     assert_equal 2, signed.parts.size
-    sign_part, orig_part = signed.parts
+    orig_part, sign_part = signed.parts
 
     assert_equal 'application/pgp-signature; name=signature.asc', sign_part.content_type
     assert_equal orig_part.content_type, @mail.content_type
@@ -153,7 +155,7 @@ class GpgTest < Test::Unit::TestCase
       end
 
       should 'have multiple parts in original content' do
-        assert original_part = @signed.parts.last
+        assert original_part = @signed.parts.first
         assert original_part.multipart?
         assert_equal 2, original_part.parts.size
         assert_match /sign me!/, original_part.parts.first.body.to_s

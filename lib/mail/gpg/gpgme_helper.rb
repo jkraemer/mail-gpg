@@ -72,6 +72,15 @@ module Mail
         crypto.sign GPGME::Data.new(plain), options
       end
 
+      def self.sign_verify(plain, signature, options = {})
+        signed = false
+        GPGME::Crypto.new.verify(signature, signed_text: plain) do |sig|
+          return false if !sig.valid? # just one invalid signature leads to false
+          signed = true
+        end
+        return signed
+      end
+
       private
 
       # normalizes the list of recipients' emails, key ids and key data to a

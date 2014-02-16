@@ -59,6 +59,13 @@ module Mail
         Mail::Gpg.decrypt(self, options)
       end
 
+      def signed?
+        Mail::Gpg.signed?(self)
+      end
+
+      def signature_valid?(options = {})
+        Mail::Gpg.signature_valid?(self, options)
+      end
     end
   end
 end

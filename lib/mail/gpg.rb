@@ -47,14 +47,16 @@ module Mail
     def self.sign(cleartext_mail, options = {})
       construct_mail(cleartext_mail, options) do
         options[:sign_as] ||= cleartext_mail.from
-        add_part SignPart.new(cleartext_mail, options)
         add_part Mail::Part.new(cleartext_mail)
+        add_part SignPart.new(cleartext_mail, options)
 
         content_type "multipart/signed; micalg=pgp-sha1; protocol=\"application/pgp-signature\"; boundary=#{boundary}"
         body.preamble = options[:preamble] || "This is an OpenPGP/MIME signed message (RFC 4880 and 3156)"
       end
     end
 
+    # options are:
+    # :verify: decrypt and verify
     def self.decrypt(encrypted_mail, options = {})
       if encrypted_mime?(encrypted_mail)
         decrypt_pgp_mime(encrypted_mail, options)
@@ -65,9 +67,30 @@ module Mail
       end
     end
 
+    def self.signature_valid?(signed_mail, options = {})
+      if signed_mime?(signed_mail)
+        signature_valid_pgp_mime?(signed_mail, options)
+      else
+        raise EncodingError, "Unsupported signature format '#{signed_mail.content_type}'"
+      end
+    end
+
+    # true if a mail is encrypted
     def self.encrypted?(mail)
       return true if encrypted_mime?(mail)
       return true if encrypted_inline?(mail)
+      false
+    end
+
+    # true if a mail is signed.
+    #
+    # throws EncodingError if called on an encrypted mail (so only call this method if encrypted? is false)
+    def self.signed?(mail)
+      return true if signed_mime?(mail)
+      return true if signed_inline?(mail)
+      if encrypted?(mail)
+        raise EncodingError, 'Unable to determine signature on an encrypted mail, use :verify option on decrypt()'
+      end
       false
     end
 
@@ -113,7 +136,16 @@ module Mail
       InlineDecryptedMessage.new(encrypted_mail, options)
     end
 
-    # check if PGP/MIME (RFC 3156)
+    # check signature for PGP/MIME (RFC 3156, section 5) signed mail
+    def self.signature_valid_pgp_mime?(signed_mail, options)
+      # MUST contain exactly two body parts
+      if signed_mail.parts.length != 2
+        raise EncodingError, "RFC 3136 mandates exactly two body parts, found '#{signed_mail.parts.length}'"
+      end
+      SignPart.signature_valid?(signed_mail.parts[0], signed_mail.parts[1], options)
+    end
+
+    # check if PGP/MIME encrypted (RFC 3156)
     def self.encrypted_mime?(mail)
       mail.has_content_type? &&
         'multipart/encrypted' == mail.mime_type &&
@@ -121,7 +153,7 @@ module Mail
     end
 
     # check if inline PGP (i.e. if any parts of the mail includes
-    # the PGP MESSAGE marker
+    # the PGP MESSAGE marker)
     def self.encrypted_inline?(mail)
       return true if mail.body.include?('-----BEGIN PGP MESSAGE-----')
       if mail.multipart?
@@ -130,6 +162,25 @@ module Mail
           return true if part.has_content_type? &&
             /application\/(?:octet-stream|pgp-encrypted)/ =~ part.mime_type &&
             /.*\.(?:pgp|gpg|asc)$/ =~ part.content_type_parameters[:name]
+        end
+      end
+      false
+    end
+
+    # check if PGP/MIME signed (RFC 3156)
+    def self.signed_mime?(mail)
+      mail.has_content_type? &&
+        'multipart/signed' == mail.mime_type &&
+        'application/pgp-signature' == mail.content_type_parameters[:protocol]
+    end
+
+    # check if inline PGP (i.e. if any parts of the mail includes
+    # the PGP SIGNED marker)
+    def self.signed_inline?(mail)
+      return true if mail.body.include?('-----BEGIN PGP SIGNED MESSAGE-----')
+      if mail.multipart?
+        mail.parts.each do |part|
+          return true if part.body.include?('-----BEGIN PGP SIGNED MESSAGE-----')
         end
       end
       false

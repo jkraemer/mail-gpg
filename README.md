@@ -96,13 +96,15 @@ if mail.encrypted?
 end
 ```
 
+Set the `:verify` option to `true` when calling `decrypt` to decrypt *and* verify signatures.
+
 A `GPGME::Error::BadPassphrase` will be raised if the password for the private key is incorrect.
 A `EncodingError` will be raised if the encrypted mails is not encoded correctly as a [RFC 3156](http://www.ietf.org/rfc/rfc3156.txt) message.
 
 
 ### Signing only
 
-Just leave the the `:encrypt` option out or pass `encrypt: false`, i.e.
+Just leave the `:encrypt` option out or pass `encrypt: false`, i.e.
 
 
     Mail.new do
@@ -110,6 +112,21 @@ Just leave the the `:encrypt` option out or pass `encrypt: false`, i.e.
       gpg sign: true
     end.deliver 
 
+### Verify signature(s)
+
+Receive the mail as usual. Check if it is signed using the `signed?` method. Check the signature of the mail with the `signature_valid?` method:
+
+```ruby
+mail = Mail.first
+if !mail.encrypted? && mail.signed?
+  # do not call signed on encrypted mails. The signature on encrypted mails
+  # must be checked by setting the :verify option when decrypting
+  puts "signature(s) valid: #{mail.signature_valid?}"
+end
+```
+
+Note that for encrypted mails the signatures can not be checked using these methods. For encrypted mails
+the `:verify` option for the `decrypt` operation must be used instead.
 
 ### Key import from public key servers
 
@@ -163,7 +180,7 @@ around with your personal gpg keychain.
 
 ## Todo
 
-* signature verification for received mails
+* signature verification for received mails with inline PGP
 * on the fly import of recipients' keys from public key servers based on email address or key id
 * handle encryption errors due to missing keys - maybe return a list of failed
   recipients
