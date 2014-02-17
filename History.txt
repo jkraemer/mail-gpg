@@ -1,6 +1,24 @@
+== 0.1.3 2014-02-17
+
+* Signature checking implemented, thanks to Morten Andersen
+
+== 0.1.2 2013-11-19
+
+* bugfix release
+
+== 0.1.1 2013-11-14
+
+* bugfix release
+
+== 0.1.0 2013-11-06
+
+* decryption support (thanks to Morten Andersen)
+* sign-only operation (thanks to FewKinG)
+* keyserver url lookup (thanks to FewKinG)
+
 == 0.0.6 2013-08-28
 
-* bugfix: onlyu encrypt to specified keys if :keys option is present
+* bugfix: only encrypt to specified keys if :keys option is present
 
 == 0.0.5 2013-08-28
 
