@@ -2,6 +2,7 @@ require 'test/unit'
 require 'shoulda/context'
 require 'mail-gpg'
 require 'action_mailer'
+require 'securerandom'
 
 begin
   require 'pry-nav'
