@@ -20,7 +20,6 @@ class GpgTest < Test::Unit::TestCase
     enc_part.content_type
   end
 
-
   def check_content(mail = @mail, encrypted = @encrypted)
     assert enc = encrypted.parts.last
     assert clear = GPGME::Crypto.new.decrypt(enc.to_s, password: 'abc').to_s
@@ -50,6 +49,7 @@ class GpgTest < Test::Unit::TestCase
     assert_equal mail.cc, signed.cc
     assert_equal mail.bcc, signed.bcc
     assert_equal mail.subject, signed.subject
+    assert_equal mail.return_path, signed.return_path
   end
 
   context "gpg installation" do
@@ -97,6 +97,7 @@ class GpgTest < Test::Unit::TestCase
     context 'mail with custom header' do
       setup do
         @mail.header['X-Custom-Header'] = 'custom value'
+        @mail.header['Return-Path'] = 'bounces@example.com'
         @signed = Mail::Gpg.sign(@mail, password: 'abc')
       end
 
@@ -114,6 +115,7 @@ class GpgTest < Test::Unit::TestCase
 
       should 'preserve customer header values' do
         assert_equal 'custom value', @signed.header['X-Custom-Header'].to_s
+        assert_equal 'bounces@example.com', @signed.return_path
       end
     end
 
@@ -224,6 +226,7 @@ class GpgTest < Test::Unit::TestCase
     context 'mail with custom header' do
       setup do
         @mail.header['X-Custom-Header'] = 'custom value'
+        @mail.header['Return-Path'] = 'bounces@example.com'
         @encrypted = Mail::Gpg.encrypt(@mail)
         @encrypted.header['X-Another-Header'] = 'another value'
       end
@@ -242,6 +245,7 @@ class GpgTest < Test::Unit::TestCase
 
       should 'preserve customer header values' do
         assert_equal 'custom value', @encrypted.header['X-Custom-Header'].to_s
+        assert_equal 'bounces@example.com', @encrypted.return_path
       end
 
       context 'when decrypted' do

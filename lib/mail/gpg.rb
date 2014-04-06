@@ -99,7 +99,7 @@ module Mail
     def self.construct_mail(cleartext_mail, options, &block)
       Mail.new do
         self.perform_deliveries = cleartext_mail.perform_deliveries
-        %w(from to cc bcc subject reply_to in_reply_to).each do |field|
+        %w(from to cc bcc subject reply_to in_reply_to return_path).each do |field|
           send field, cleartext_mail.send(field)
         end
         cleartext_mail.header.fields.each do |field|
