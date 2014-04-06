@@ -26,6 +26,10 @@ class DecryptedPartTest < Test::Unit::TestCase
       assert mail == @mail
       assert mail.message_id == @mail.message_id
       assert mail.message_id != @part.message_id
+      assert vr = mail.verify_result
+      assert sig = vr.signatures.first
+      assert sig.to_s=~ /Joe/
+      assert sig.valid?
     end
 
     should 'raise encoding error for non gpg mime type' do
@@ -33,5 +37,7 @@ class DecryptedPartTest < Test::Unit::TestCase
       part.content_type = 'text/plain'
       assert_raise(EncodingError) { Mail::Gpg::DecryptedPart.new(part) }
     end
+
+
   end
 end

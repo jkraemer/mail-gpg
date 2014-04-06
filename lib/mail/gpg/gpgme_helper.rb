@@ -1,3 +1,5 @@
+require 'mail/gpg/gpgme_ext'
+
 # GPGME methods for encryption/decryption/signing
 module Mail
   module Gpg
@@ -50,6 +52,7 @@ module Mail
           begin
             if options[:verify]
               ctx.decrypt_verify(cipher_data, plain_data)
+              plain_data.verify_result = ctx.verify_result
             else
               ctx.decrypt(cipher_data, plain_data)
             end

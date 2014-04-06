@@ -127,7 +127,8 @@ module Mail
       if !VersionPart.isVersionPart? encrypted_mail.parts[0]
         raise EncodingError, "RFC 3136 first part not a valid version part '#{encrypted_mail.parts[0]}'"
       end
-      Mail.new(DecryptedPart.new(encrypted_mail.parts[1], options)) do
+      decrypted = DecryptedPart.new(encrypted_mail.parts[1], options)
+      Mail.new(decrypted) do
         %w(from to cc bcc subject reply_to in_reply_to).each do |field|
           send field, encrypted_mail.send(field)
         end
@@ -137,6 +138,7 @@ module Mail
         encrypted_mail.header.fields.each do |field|
           header[field.name] = field.value if field.name =~ /^X-/ && header[field.name].nil?
         end
+        verify_result decrypted.verify_result if options[:verify]
       end
     end
 

@@ -250,6 +250,10 @@ class GpgTest < Test::Unit::TestCase
       should 'decrypt and verify' do
         assert mail = Mail::Gpg.decrypt(@encrypted, { :verify => true, :password => 'abc' })
         assert mail == @mail
+        assert vr = mail.verify_result
+        assert sig = vr.signatures.first
+        assert sig.to_s=~ /Joe/
+        assert sig.valid?
       end
     end
 
@@ -330,7 +334,7 @@ class GpgTest < Test::Unit::TestCase
     context 'multipart mail' do
       setup do
         @mail.add_file 'Rakefile'
-        @encrypted = Mail::Gpg.encrypt(@mail)
+        @encrypted = Mail::Gpg.encrypt(@mail, sign: true, password: 'abc')
       end
 
       should 'have same recipients and subject' do
@@ -355,10 +359,14 @@ class GpgTest < Test::Unit::TestCase
         assert_match /Rakefile/, m.parts.last.content_disposition
       end
 
-      should 'decrypt' do
-        assert mail = Mail::Gpg.decrypt(@encrypted, { :password => 'abc' })
+      should 'decrypt and verify' do
+        assert mail = Mail::Gpg.decrypt(@encrypted, { :verify => true, :password => 'abc' })
         assert mail == @mail
         assert mail.parts[1] == @mail.parts[1]
+        assert vr = mail.verify_result
+        assert sig = vr.signatures.first
+        assert sig.to_s=~ /Joe/
+        assert sig.valid?
       end
     end
   end

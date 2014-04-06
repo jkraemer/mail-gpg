@@ -1,4 +1,5 @@
 require 'mail/gpg/delivery_handler'
+require 'mail/gpg/verify_result_attribute'
 
 module Mail
   module Gpg
@@ -7,6 +8,7 @@ module Mail
       def self.included(base)
         base.class_eval do
           attr_accessor :raise_encryption_errors
+          include VerifyResultAttribute
         end
       end
 

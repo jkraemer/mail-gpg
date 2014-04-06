@@ -17,15 +17,19 @@ class InlineDecryptedMessageTest < Test::Unit::TestCase
     end
 
     context "inline message" do
-      should "decrypt body" do
+      should "decrypt and verify body" do
         mail = Mail.new(@mail)
         mail.body = InlineDecryptedMessageTest.encrypt(mail, mail.body.to_s)
 
         assert !mail.multipart?
         assert mail.encrypted?
-        assert decrypted = mail.decrypt(:password => 'abc')
+        assert decrypted = mail.decrypt(:password => 'abc', verify: true)
         assert decrypted == @mail
         assert !decrypted.encrypted?
+        assert vr = decrypted.verify_result
+        assert sig = vr.signatures.first
+        assert sig.to_s=~ /Joe/
+        assert sig.valid?
       end
     end
 
@@ -55,7 +59,7 @@ class InlineDecryptedMessageTest < Test::Unit::TestCase
     end
 
     context "cleartext body and encrypted attachment message" do
-      should "decrypt attachment" do
+      should "decrypt and verify attachment" do
         rakefile = File.open('Rakefile') { |file| file.read }
         mail = Mail.new(@mail)
         mail.content_type = 'multipart/mixed'
@@ -68,7 +72,7 @@ class InlineDecryptedMessageTest < Test::Unit::TestCase
 
         assert mail.multipart?
         assert mail.encrypted?
-        assert decrypted = mail.decrypt(:password => 'abc')
+        assert decrypted = mail.decrypt(password: 'abc', verify: true)
         assert !decrypted.encrypted?
         check_headers(@mail, decrypted)
         assert_equal 2, decrypted.parts.length
@@ -76,11 +80,17 @@ class InlineDecryptedMessageTest < Test::Unit::TestCase
         assert /application\/octet-stream; (?:charset=UTF-8; )?name=Rakefile/ =~ decrypted.parts[1].content_type
         assert_equal 'attachment; filename=Rakefile', decrypted.parts[1].content_disposition
         assert_equal rakefile, decrypted.parts[1].body.decoded
+
+        assert_nil decrypted.parts[0].verify_result
+        assert vr = decrypted.parts[1].verify_result
+        assert sig = vr.signatures.first
+        assert sig.to_s=~ /Joe/
+        assert sig.valid?
       end
     end
 
     context "encrypted body and attachment message" do
-      should "decrypt" do
+      should "decrypt and verify" do
         rakefile = File.open('Rakefile') { |file| file.read }
         mail = Mail.new(@mail)
         mail.content_type = 'multipart/mixed'
@@ -94,7 +104,7 @@ class InlineDecryptedMessageTest < Test::Unit::TestCase
 
         assert mail.multipart?
         assert mail.encrypted?
-        assert decrypted = mail.decrypt(:password => 'abc')
+        assert decrypted = mail.decrypt(password: 'abc', verify: true)
         assert !decrypted.encrypted?
         check_headers(@mail, decrypted)
         assert_equal 2, decrypted.parts.length
@@ -102,6 +112,12 @@ class InlineDecryptedMessageTest < Test::Unit::TestCase
         assert /application\/octet-stream; (?:charset=UTF-8; )?name=Rakefile/ =~ decrypted.parts[1].content_type
         assert_equal 'attachment; filename=Rakefile', decrypted.parts[1].content_disposition
         assert_equal rakefile, decrypted.parts[1].body.decoded
+        decrypted.parts.each do |part|
+          assert vr = part.verify_result
+          assert sig = vr.signatures.first
+          assert sig.to_s=~ /Joe/
+          assert sig.valid?
+        end
       end
     end
   end

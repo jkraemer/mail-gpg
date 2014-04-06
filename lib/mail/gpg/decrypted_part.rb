@@ -1,6 +1,7 @@
+require 'mail/gpg/verified_part'
 module Mail
   module Gpg
-    class DecryptedPart < Mail::Part
+    class DecryptedPart < VerifiedPart
 
       # options are:
       #
@@ -11,6 +12,7 @@ module Mail
         end
 
         decrypted = GpgmeHelper.decrypt(cipher_part.body.decoded, options)
+        self.verify_result = decrypted.verify_result if options[:verify]
         super(decrypted)
       end
     end
