@@ -1,0 +1,2 @@
+class MissingKeysError < StandardError
+end

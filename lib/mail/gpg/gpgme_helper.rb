@@ -11,6 +11,10 @@ module Mail
 
         recipient_keys = keys_for_data options[:recipients], options.delete(:keys)
 
+        if recipient_keys.empty?
+          raise MissingKeysError.new('No keys to encrypt to!')
+        end
+
         flags = 0
         flags |= GPGME::ENCRYPT_ALWAYS_TRUST if options[:always_trust]
 
