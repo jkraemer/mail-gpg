@@ -12,12 +12,21 @@ module Mail
         end
       end
 
-      def self.signature_valid?(plain, signature, options = {})
-        if !(signature.has_content_type? && ('application/pgp-signature' == signature.mime_type))
+      def self.signature_valid?(plain_part, signature_part, options = {})
+        if !(signature_part.has_content_type? &&
+             ('application/pgp-signature' == signature_part.mime_type))
           return false
         end
 
-        GpgmeHelper.sign_verify(plain.encoded, signature.body.encoded, options)
+        # Work around the problem that plain_part.raw_source prefixes an
+        # erronous CRLF, <https://github.com/mikel/mail/issues/702>.
+        plaintext = [
+                      plain_part.header.raw_source,
+                      "\r\n\r\n",
+                      plain_part.body.raw_source
+                    ].join
+        signature = signature_part.body.encoded
+        GpgmeHelper.sign_verify(plaintext, signature, options)
       end
     end
   end
