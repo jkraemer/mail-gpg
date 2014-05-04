@@ -153,7 +153,9 @@ module Mail
       if signed_mail.parts.length != 2
         raise EncodingError, "RFC 3136 mandates exactly two body parts, found '#{signed_mail.parts.length}'"
       end
-      SignPart.signature_valid?(signed_mail.parts[0], signed_mail.parts[1], options)
+      result, verify_result = SignPart.verify_signature(signed_mail.parts[0], signed_mail.parts[1], options)
+      signed_mail.verify_result = verify_result
+      return result
     end
 
     # check if PGP/MIME encrypted (RFC 3156)

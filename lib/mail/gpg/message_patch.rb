@@ -57,6 +57,10 @@ module Mail
         Mail::Gpg.encrypted?(self)
       end
 
+      # returns the decrypted mail object.
+      #
+      # pass verify: true to verify signatures as well. The gpgme verification
+      # result will be available via decrypted_mail.verify_result
       def decrypt(options = {})
         Mail::Gpg.decrypt(self, options)
       end
@@ -65,6 +69,10 @@ module Mail
         Mail::Gpg.signed?(self)
       end
 
+      # checks validity of signatures (true / false)
+      #
+      # after calling this, you can gain access the gpgme verification result
+      # via the verify_result method.
       def signature_valid?(options = {})
         Mail::Gpg.signature_valid?(self, options)
       end

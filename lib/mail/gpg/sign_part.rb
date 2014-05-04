@@ -12,7 +12,13 @@ module Mail
         end
       end
 
+      # true if all signatures are valid
       def self.signature_valid?(plain_part, signature_part, options = {})
+        verify_signature(plain_part, signature_part, options)[0]
+      end
+
+      # will return [success(boolean), verify_result(as returned by gpgme)]
+      def self.verify_signature(plain_part, signature_part, options = {})
         if !(signature_part.has_content_type? &&
              ('application/pgp-signature' == signature_part.mime_type))
           return false

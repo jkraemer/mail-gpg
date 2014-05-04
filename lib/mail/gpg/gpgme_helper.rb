@@ -79,13 +79,22 @@ module Mail
         crypto.sign GPGME::Data.new(plain), options
       end
 
+      # returns [success(bool), VerifyResult(from gpgme)]
+      # success will be true when there is at least one sig and no invalid sig
       def self.sign_verify(plain, signature, options = {})
-        signed = false
-        GPGME::Crypto.new.verify(signature, signed_text: plain) do |sig|
-          return false if !sig.valid? # just one invalid signature leads to false
-          signed = true
+        signed_data = GPGME::Data.new(plain)
+        signature = GPGME::Data.new(signature)
+
+        success = verify_result = nil
+        GPGME::Ctx.new(options) do |ctx|
+          ctx.verify signature, signed_data, nil
+          verify_result = ctx.verify_result
+          signatures = verify_result.signatures
+          success = signatures &&
+            signatures.size > 0 &&
+            signatures.detect{|s| !s.valid? }.nil?
         end
-        return signed
+        return [success, verify_result]
       end
 
       private

@@ -36,6 +36,8 @@ class GpgTest < Test::Unit::TestCase
       assert sig.valid?
     end
     assert Mail::Gpg.signature_valid?(signed)
+    assert signed.verify_result.present?
+    assert signed.verify_result.signatures.any?
   end
 
   def check_mime_structure_signed(mail = @mail, signed = @signed)
