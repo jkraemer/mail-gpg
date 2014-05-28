@@ -1,3 +1,8 @@
+== 0.1.5 2014-05-28
+
+* signing refactoring so the signed part only contains the necessary headers
+* preserve Auto-Submitted header
+
 == 0.1.4 2014-05-26
 
 * preserve return path headers and message id
