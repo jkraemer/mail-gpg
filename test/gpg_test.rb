@@ -30,18 +30,24 @@ class GpgTest < Test::Unit::TestCase
   def check_signature(mail = @mail, signed = @signed)
     assert signed.signed?
     assert signature = signed.parts.detect{|p| p.content_type =~ /signature\.asc/}.body.to_s
-    GPGME::Crypto.new.verify(signature, signed_text: mail.encoded) do |sig|
-      assert true == sig.valid?
+    assert signed_part = signed.parts.detect{|p| p.content_type !~ /signature\.asc/}
+    assert_equal mail.parts.size, signed_part.parts.size
+    GPGME::Crypto.new.verify(signature, signed_text: signed_part.encoded) do |sig|
+      assert sig.valid?
     end
     assert Mail::Gpg.signature_valid?(signed)
   end
 
   def check_mime_structure_signed(mail = @mail, signed = @signed)
+    assert_match /multipart\/signed/, signed.content_type
     assert_equal 2, signed.parts.size
     orig_part, sign_part = signed.parts
 
     assert_equal 'application/pgp-signature; name=signature.asc', sign_part.content_type
-    assert_equal orig_part.content_type, @mail.content_type
+    assert_equal mail.parts.size, orig_part.parts.size
+    assert_nil orig_part.to
+    assert_nil orig_part.from
+    assert_nil orig_part.subject
   end
 
   def check_headers_signed(mail = @mail, signed = @signed)
@@ -73,6 +79,7 @@ class GpgTest < Test::Unit::TestCase
         from 'jane@foo.bar'
         subject 'test test'
         body 'sign me!'
+        content_type 'text/plain; charset=UTF-8'
       end
     end
 
@@ -138,9 +145,19 @@ class GpgTest < Test::Unit::TestCase
       end
     end
 
-    context 'multipart mail' do
+    context 'multipart alternative mail' do
       setup do
-        @mail.add_file 'Rakefile'
+        @mail = Mail.new do
+          to 'joe@foo.bar'
+          from 'jane@foo.bar'
+          subject 'test test'
+          text_part do
+            body 'sign me!'
+          end
+          html_part do
+            body '<h1>H1</h1>'
+          end
+        end
         @signed = Mail::Gpg.sign(@mail, password: 'abc')
       end
 
@@ -158,10 +175,12 @@ class GpgTest < Test::Unit::TestCase
 
       should 'have multiple parts in original content' do
         assert original_part = @signed.parts.first
-        assert original_part.multipart?
-        assert_equal 2, original_part.parts.size
+        assert @mail.multipart?
+        assert_match /alternative/, @mail.content_type
+        assert_match /alternative/, original_part.content_type
+        assert_equal original_part.parts.size, @mail.parts.size
         assert_match /sign me!/, original_part.parts.first.body.to_s
-        assert_match /Rakefile/, original_part.parts.last.content_disposition
+        assert_match /H1/, original_part.parts.last.body.to_s
       end
     end
   end

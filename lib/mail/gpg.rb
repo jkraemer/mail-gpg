@@ -10,7 +10,7 @@ require 'mail/gpg/inline_decrypted_message'
 require 'mail/gpg/gpgme_helper'
 require 'mail/gpg/message_patch'
 require 'mail/gpg/rails'
-require 'mail/gpg/sign_part'
+require 'mail/gpg/signed_part'
 
 module Mail
   module Gpg
@@ -45,10 +45,11 @@ module Mail
     end
 
     def self.sign(cleartext_mail, options = {})
+      options[:sign_as] ||= cleartext_mail.from
       construct_mail(cleartext_mail, options) do
-        options[:sign_as] ||= cleartext_mail.from
-        add_part Mail::Part.new(cleartext_mail)
-        add_part SignPart.new(cleartext_mail, options)
+        to_be_signed = SignedPart.build(cleartext_mail)
+        add_part to_be_signed
+        add_part to_be_signed.sign(options)
 
         content_type "multipart/signed; micalg=pgp-sha1; protocol=\"application/pgp-signature\"; boundary=#{boundary}"
         body.preamble = options[:preamble] || "This is an OpenPGP/MIME signed message (RFC 4880 and 3156)"
@@ -94,16 +95,21 @@ module Mail
       false
     end
 
+    STANDARD_HEADERS = %w(from to cc bcc subject reply_to in_reply_to return_path message_id)
+    CUSTOM_HEADERS = %w(Auto-Submitted)
+
     private
 
     def self.construct_mail(cleartext_mail, options, &block)
       Mail.new do
         self.perform_deliveries = cleartext_mail.perform_deliveries
-        %w(from to cc bcc subject reply_to in_reply_to return_path message_id).each do |field|
+        STANDARD_HEADERS.each do |field|
           send field, cleartext_mail.send(field)
         end
         cleartext_mail.header.fields.each do |field|
-          header[field.name] = field.value if field.name =~ /^X-/
+          if CUSTOM_HEADERS.include?(field.name) or field.name =~ /^X-/
+            header[field.name] = field.value
+          end
         end
         instance_eval &block
       end

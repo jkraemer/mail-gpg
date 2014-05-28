@@ -44,7 +44,12 @@ class MessageTest < Test::Unit::TestCase
 
       context "" do
         setup do
+          @mail.header['Auto-Submitted'] = 'foo'
           @mail.deliver
+        end
+
+        should 'keep custom header value' do
+          assert_equal 'foo', @mails.first.header['Auto-Submitted'].value
         end
 
         should "deliver signed mail" do
@@ -56,12 +61,12 @@ class MessageTest < Test::Unit::TestCase
           assert m.multipart?
           assert m.signature_valid?
           assert sign_part = m.parts.last
-          assert m = Mail::Message.new(m.parts.first)
-          assert !m.multipart?
-          GPGME::Crypto.new.verify(sign_part.body.to_s, signed_text: m.encoded) do |sig| 
-            assert true == sig.valid?
+          #assert m = Mail::Message.new(m.parts.first)
+          #assert !m.multipart?
+          GPGME::Crypto.new.verify(sign_part.body.to_s, signed_text: m.parts.first.encoded) do |sig|
+            assert sig.valid?
           end
-          assert_equal 'i am unencrypted', m.body.to_s
+          assert_equal 'i am unencrypted', m.parts.first.body.to_s
         end
 
         should "fail signature on tampered body" do

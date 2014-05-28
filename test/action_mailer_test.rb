@@ -69,8 +69,9 @@ class ActionMailerTest < Test::Unit::TestCase
         assert_equal 'signed', delivered.subject
         assert_equal 2, delivered.parts.size
         assert sign_part = delivered.parts.detect{|p| p.content_type =~ /signature\.asc/}
-        GPGME::Crypto.new.verify(sign_part.body.to_s, signed_text: m.encoded) do |sig|
-          assert true == sig.valid?
+        assert signed_part = delivered.parts.detect{|p| p.content_type !~ /signature\.asc/}
+        GPGME::Crypto.new.verify(sign_part.body.to_s, signed_text: signed_part.encoded) do |sig|
+          assert sig.valid?
         end
       end
     end
@@ -115,8 +116,9 @@ class ActionMailerTest < Test::Unit::TestCase
         assert_equal 'signed', delivered.subject
         assert_equal 2, delivered.parts.size
         assert sign_part = delivered.parts.detect{|p| p.content_type =~ /signature\.asc/}
-        GPGME::Crypto.new.verify(sign_part.body.to_s, signed_text: m.encoded) do |sig|
-          assert true == sig.valid?
+        assert signed_part = delivered.parts.detect{|p| p.content_type !~ /signature\.asc/}
+        GPGME::Crypto.new.verify(sign_part.body.to_s, signed_text: signed_part.encoded) do |sig|
+          assert sig.valid?
         end
       end
     end
