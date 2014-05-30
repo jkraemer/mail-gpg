@@ -18,12 +18,12 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "mail", "~> 2.5.3"
-  spec.add_dependency "gpgme", "~> 2.0.2"
+  spec.add_dependency "mail", "~> 2.5", ">= 2.5.3"
+  spec.add_dependency "gpgme", "~> 2.0", ">= 2.0.2"
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "minitest", "~> 4.0"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "actionmailer", ">= 3.2.0"
   spec.add_development_dependency "pry-nav"
-  spec.add_development_dependency "shoulda-context"
+  spec.add_development_dependency "shoulda-context", '~> 1.1'
 end
