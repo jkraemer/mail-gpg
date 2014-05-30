@@ -52,8 +52,13 @@ class GpgTest < Test::Unit::TestCase
 
   def check_headers_signed(mail = @mail, signed = @signed)
     assert_equal mail.to, signed.to
-    assert_equal mail.cc, signed.cc
-    assert_equal mail.bcc, signed.bcc
+    if mail.cc
+      assert_equal mail.cc, signed.cc
+    end
+    if mail.bcc
+      assert_equal mail.bcc, signed.bcc
+    end
+
     assert_equal mail.subject, signed.subject
     assert_equal mail.return_path, signed.return_path
   end
@@ -76,7 +81,7 @@ class GpgTest < Test::Unit::TestCase
     setup do
       @mail = Mail.new do
         to 'joe@foo.bar'
-        from 'jane@foo.bar'
+        from '<Jane Doe> jane@foo.bar'
         subject 'test test'
         body 'sign me!'
         content_type 'text/plain; charset=UTF-8'
@@ -86,6 +91,10 @@ class GpgTest < Test::Unit::TestCase
     context 'simple mail' do
       setup do
         @signed = Mail::Gpg.sign(@mail, password: 'abc')
+      end
+
+      should 'preserve from name' do
+        assert_equal '<Jane Doe> jane@foo.bar', @signed.header['from'].value
       end
 
       should 'have same recipients and subject' do

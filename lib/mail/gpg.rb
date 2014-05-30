@@ -95,8 +95,8 @@ module Mail
       false
     end
 
-    STANDARD_HEADERS = %w(from to cc bcc subject reply_to in_reply_to return_path message_id)
-    CUSTOM_HEADERS = %w(Auto-Submitted)
+    STANDARD_HEADERS = %w(from to cc bcc reply_to subject in_reply_to return_path message_id)
+    MORE_HEADERS = %w(Auto-Submitted)
 
     private
 
@@ -104,10 +104,12 @@ module Mail
       Mail.new do
         self.perform_deliveries = cleartext_mail.perform_deliveries
         STANDARD_HEADERS.each do |field|
-          send field, cleartext_mail.send(field)
+          if h = cleartext_mail.header[field]
+            self.header[field] = h.value
+          end
         end
         cleartext_mail.header.fields.each do |field|
-          if CUSTOM_HEADERS.include?(field.name) or field.name =~ /^X-/
+          if MORE_HEADERS.include?(field.name) or field.name =~ /^X-/
             header[field.name] = field.value
           end
         end
