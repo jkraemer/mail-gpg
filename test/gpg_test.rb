@@ -110,10 +110,11 @@ class GpgTest < Test::Unit::TestCase
       end
     end
 
-    context 'mail with custom header' do
+    context 'mail with custom headers' do
       setup do
         @mail.header['X-Custom-Header'] = 'custom value'
         @mail.header['Return-Path'] = 'bounces@example.com'
+        @mail.header['References'] = 'some-message-id'
         @signed = Mail::Gpg.sign(@mail, password: 'abc')
       end
 
@@ -132,6 +133,7 @@ class GpgTest < Test::Unit::TestCase
       should 'preserve customer header values' do
         assert_equal 'custom value', @signed.header['X-Custom-Header'].to_s
         assert_equal 'bounces@example.com', @signed.return_path
+        assert_equal 'some-message-id', @signed.header['References'].value
       end
     end
 
