@@ -66,6 +66,9 @@ class InlineSignedMessageTest < Test::Unit::TestCase
         assert mail.signed?
         assert mail.signature_valid?
         assert vr = mail.parts.last.verify_result
+        assert !mail.parts.first.signed?
+        assert mail.parts.last.signed?
+        assert Mail::Gpg.signed_inline?(mail.parts.last)
         assert_equal [vr], mail.verify_result
         assert sig = vr.signatures.first
         assert sig.to_s=~ /Joe/

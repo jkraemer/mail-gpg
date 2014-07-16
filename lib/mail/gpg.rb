@@ -183,7 +183,7 @@ module Mail
     end
 
     INLINE_SIGNED_MARKER_RE = Regexp.new('^-----(BEGIN|END) PGP SIGNED MESSAGE-----$(\s*Hash: \w+$)?', Regexp::MULTILINE)
-    INLINE_SIG_RE = Regexp.new('-----BEGIN PGP SIGNATURE-----.*-----END PGP SIGNATURE-----', Regexp::MULTILINE)
+    INLINE_SIG_RE = Regexp.new('^-----BEGIN PGP SIGNATURE-----\s*$.*^-----END PGP SIGNATURE-----\s*$', Regexp::MULTILINE)
     # utility method to remove inline signature and related pgp markers
     def self.strip_inline_signature(signed_text)
       signed_text.gsub(INLINE_SIGNED_MARKER_RE, '').gsub(INLINE_SIG_RE, '').strip
