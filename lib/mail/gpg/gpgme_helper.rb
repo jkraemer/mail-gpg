@@ -97,6 +97,20 @@ module Mail
         return [success, verify_result]
       end
 
+      def self.inline_verify(signed_text, options = {})
+        signed_data = GPGME::Data.new(signed_text)
+        success = verify_result = nil
+        GPGME::Ctx.new(options) do |ctx|
+          ctx.verify signed_data, nil
+          verify_result = ctx.verify_result
+          signatures = verify_result.signatures
+          success = signatures &&
+            signatures.size > 0 &&
+            signatures.detect{|s| !s.valid? }.nil?
+        end
+        return [success, verify_result]
+      end
+
       private
 
       # normalizes the list of recipients' emails, key ids and key data to a

@@ -72,6 +72,8 @@ module Mail
     def self.signature_valid?(signed_mail, options = {})
       if signed_mime?(signed_mail)
         signature_valid_pgp_mime?(signed_mail, options)
+      elsif signed_inline?(signed_mail)
+        signature_valid_inline?(signed_mail, options)
       else
         raise EncodingError, "Unsupported signature format '#{signed_mail.content_type}'"
       end
@@ -157,6 +159,36 @@ module Mail
       signed_mail.verify_result = verify_result
       return result
     end
+
+    # check signature for inline signed mail
+    def self.signature_valid_inline?(signed_mail, options)
+      result = nil
+      if signed_mail.multipart?
+
+        signed_mail.parts.each do |part|
+          if signed_inline?(part)
+            if result.nil?
+              result = true
+              signed_mail.verify_result = []
+            end
+            result &= signature_valid_inline?(part, options)
+            signed_mail.verify_result << part.verify_result
+          end
+        end
+      else
+        result, verify_result = GpgmeHelper.inline_verify(signed_mail.body.to_s, options)
+        signed_mail.verify_result = verify_result
+      end
+      return result
+    end
+
+    INLINE_SIGNED_MARKER_RE = Regexp.new('^-----(BEGIN|END) PGP SIGNED MESSAGE-----$(\s*Hash: \w+$)?', Regexp::MULTILINE)
+    INLINE_SIG_RE = Regexp.new('-----BEGIN PGP SIGNATURE-----.*-----END PGP SIGNATURE-----', Regexp::MULTILINE)
+    # utility method to remove inline signature and related pgp markers
+    def self.strip_inline_signature(signed_text)
+      signed_text.gsub(INLINE_SIGNED_MARKER_RE, '').gsub(INLINE_SIG_RE, '').strip
+    end
+
 
     # check if PGP/MIME encrypted (RFC 3156)
     def self.encrypted_mime?(mail)
