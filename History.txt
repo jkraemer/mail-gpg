@@ -1,7 +1,9 @@
-== 0.1.8 2014-07-16
+== 0.2.0 2014-07-16
 
 * implement signature verification for inline signed messages
-* make signature verification results accessible via Message#verify_result
+* make signature verification more consistent with decryption by providing
+  Mail::Message#verify which strips raw signature data and initializes verify_result member.
+* add Mail::Message#signatures as an easy way to retrieve all signatures on a Message
 
 == 0.1.7 2014-06-03
 
