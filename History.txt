@@ -1,3 +1,8 @@
+== 0.1.8 2014-07-16
+
+* implement signature verification for inline signed messages
+* make signature verification results accessible via Message#verify_result
+
 == 0.1.7 2014-06-03
 
 * preserve References: header
