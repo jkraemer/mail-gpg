@@ -3,6 +3,7 @@ require 'mail/message'
 require 'gpgme'
 
 require 'mail/gpg/version'
+require 'mail/gpg/missing_keys_error'
 require 'mail/gpg/version_part'
 require 'mail/gpg/decrypted_part'
 require 'mail/gpg/encrypted_part'

@@ -94,7 +94,7 @@ class MessageTest < Test::Unit::TestCase
         end
 
         should "raise encryption error" do
-          assert_raises(GPGME::Error::InvalidValue){
+          assert_raises(Mail::Gpg::MissingKeysError){
             @mail.deliver
           }
         end

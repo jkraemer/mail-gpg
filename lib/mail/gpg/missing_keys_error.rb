@@ -1,2 +1,6 @@
-class MissingKeysError < StandardError
+module Mail
+  module Gpg
+    class MissingKeysError < StandardError
+    end
+  end
 end
