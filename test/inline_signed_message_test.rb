@@ -18,13 +18,13 @@ class InlineSignedMessageTest < Test::Unit::TestCase
     context 'strip_inline_signature' do
       should 'strip signature from signed text' do
         body = self.class.inline_sign(@mail, 'i am signed')
-        assert stripped_body = Mail::Gpg.strip_inline_signature(body)
-        assert_equal 'i am signed', stripped_body
+        assert stripped_body = Mail::Gpg::InlineSignedMessage.strip_inline_signature(body)
+        assert_equal "-----BEGIN PGP SIGNED MESSAGE-----\nHash: SHA1\n\ni am signed\n-----END PGP SIGNED MESSAGE-----", stripped_body
       end
 
       should 'not change unsigned text' do
-        assert stripped_body = Mail::Gpg.strip_inline_signature("foo\nbar\n")
-        assert_equal "foo\nbar", stripped_body
+        assert stripped_body = Mail::Gpg::InlineSignedMessage.strip_inline_signature("foo\nbar\n")
+        assert_equal "foo\nbar\n", stripped_body
       end
     end
 
@@ -34,9 +34,9 @@ class InlineSignedMessageTest < Test::Unit::TestCase
         mail.body = self.class.inline_sign(mail, mail.body.to_s)
         assert !mail.multipart?
         assert mail.signed?
-        assert mail.signature_valid?
-        assert vr = mail.verify_result
-        assert sig = vr.signatures.first
+        assert verified = mail.verify
+        assert verified.signature_valid?
+        assert sig = verified.signatures.first
         assert sig.to_s=~ /Joe/
         assert sig.valid?
       end
@@ -46,9 +46,10 @@ class InlineSignedMessageTest < Test::Unit::TestCase
         mail.body = self.class.inline_sign(mail, mail.body.to_s).gsub /i am/, 'i was'
         assert !mail.multipart?
         assert mail.signed?
-        assert !mail.signature_valid?
-        assert vr = mail.verify_result
-        assert sig = vr.signatures.first
+        assert verified = mail.verify
+        assert !verified.signature_valid?
+        assert vr = verified.verify_result
+        assert sig = verified.signatures.first
         assert sig.to_s=~ /Joe/
         assert !sig.valid?
       end
@@ -64,13 +65,14 @@ class InlineSignedMessageTest < Test::Unit::TestCase
         end
         assert mail.multipart?
         assert mail.signed?
-        assert mail.signature_valid?
-        assert vr = mail.parts.last.verify_result
-        assert !mail.parts.first.signed?
-        assert mail.parts.last.signed?
-        assert Mail::Gpg.signed_inline?(mail.parts.last)
-        assert_equal [vr], mail.verify_result
-        assert sig = vr.signatures.first
+        assert verified = mail.verify
+        assert verified.signature_valid?
+        assert vr = verified.parts.last.verify_result
+        assert !verified.parts.first.signed?
+        assert verified.parts.last.signed?
+        assert Mail::Gpg.signed_inline?(verified.parts.last)
+        assert_equal [vr], verified.verify_result
+        assert sig = verified.signatures.first
         assert sig.to_s=~ /Joe/
         assert sig.valid?
       end
@@ -87,17 +89,18 @@ class InlineSignedMessageTest < Test::Unit::TestCase
 
         assert mail.multipart?
         assert mail.signed?
-        assert !mail.signature_valid?
-        assert vr = mail.verify_result
+        assert verified = mail.verify
+        assert !verified.signature_valid?
+        assert vr = verified.verify_result
         assert_equal 2, vr.size
 
-        invalid = mail.parts[1]
+        invalid = verified.parts[1]
         assert !invalid.signature_valid?
         assert sig = invalid.verify_result.signatures.first
         assert sig.to_s=~ /Joe/
         assert !sig.valid?
 
-        valid = mail.parts[2]
+        valid = verified.parts[2]
         assert valid.signature_valid?
         assert sig = valid.verify_result.signatures.first
         assert sig.to_s=~ /Joe/

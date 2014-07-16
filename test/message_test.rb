@@ -42,6 +42,35 @@ class MessageTest < Test::Unit::TestCase
         @mail.gpg sign: true, password: 'abc'
       end
 
+      context 'with multiple parts' do
+        setup do
+          p = Mail::Part.new do
+            body 'and another part'
+          end
+          @mail.add_part p
+          p = Mail::Part.new do
+            body 'and a third part'
+          end
+          @mail.add_part p
+
+          @mail.deliver
+          @signed = @mails.first
+          @verified = @signed.verify
+        end
+
+        should 'verify signature' do
+          assert @verified.signature_valid?
+        end
+
+        should 'have original three parts' do
+          assert_equal 3, @mail.parts.size
+          assert_equal 3, @verified.parts.size
+          assert_equal 'i am unencrypted', @verified.parts[0].body.to_s
+          assert_equal 'and another part', @verified.parts[1].body.to_s
+          assert_equal 'and a third part', @verified.parts[2].body.to_s
+        end
+      end
+
       context "" do
         setup do
           @mail.header['Auto-Submitted'] = 'foo'
@@ -59,14 +88,18 @@ class MessageTest < Test::Unit::TestCase
           assert !m.encrypted?
           assert m.signed?
           assert m.multipart?
-          assert m.signature_valid?
           assert sign_part = m.parts.last
-          #assert m = Mail::Message.new(m.parts.first)
-          #assert !m.multipart?
           GPGME::Crypto.new.verify(sign_part.body.to_s, signed_text: m.parts.first.encoded) do |sig|
             assert sig.valid?
           end
-          assert_equal 'i am unencrypted', m.parts.first.body.to_s
+        end
+
+        should 'verify signed mail' do
+          assert m = @mails.first
+          assert verified = m.verify
+          assert verified.signature_valid?
+          assert !verified.multipart?
+          assert_equal 'i am unencrypted', verified.body.to_s
         end
 
         should "fail signature on tampered body" do
@@ -76,10 +109,33 @@ class MessageTest < Test::Unit::TestCase
           assert !m.encrypted?
           assert m.signed?
           assert m.multipart?
-          assert m.signature_valid?
+          assert verified = m.verify
+          assert verified.signature_valid?
           m.parts.first.body = 'replaced body'
-          assert !m.signature_valid?
+          assert verified = m.verify
+          assert !verified.signature_valid?
         end
+      end
+    end
+
+    context 'with encryption and signing' do
+      setup do
+        @mail.gpg encrypt: true, sign: true, password: 'abc'
+        @mail.deliver
+      end
+
+      should 'decrypt and check signature' do
+        assert_equal 1, @mails.size
+        assert m = @mails.first
+        assert_equal 'test', m.subject
+        assert m.multipart?
+        assert m.encrypted?
+        assert decrypted = m.decrypt(:password => 'abc', verify: true)
+        assert_equal 'test', decrypted.subject
+        assert decrypted == @mail
+        assert_equal 'i am unencrypted', decrypted.body.to_s
+        assert decrypted.signature_valid?
+        assert_equal 1, decrypted.signatures.size
       end
     end
 
@@ -105,6 +161,7 @@ class MessageTest < Test::Unit::TestCase
           assert_equal 0, @mails.size
         end
       end
+
 
       context "" do
         setup do

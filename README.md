@@ -119,14 +119,28 @@ Receive the mail as usual. Check if it is signed using the `signed?` method. Che
 ```ruby
 mail = Mail.first
 if !mail.encrypted? && mail.signed?
-  # do not call signed on encrypted mails. The signature on encrypted mails
-  # must be checked by setting the :verify option when decrypting
-  puts "signature(s) valid: #{mail.signature_valid?}"
+  verified = mail.verify
+  puts "signature(s) valid: #{verified.signature_valid?}"
+  puts "message signed by: #{verified.signatures.map{|sig|sig.from}.join("\n")}"
 end
 ```
 
-Note that for encrypted mails the signatures can not be checked using these methods. For encrypted mails
-the `:verify` option for the `decrypt` operation must be used instead.
+Note that for encrypted mails the signatures can not be checked using these
+methods. For encrypted mails the `:verify` option for the `decrypt` operation
+must be used instead:
+
+```ruby
+if mail.encrypted?
+  decrypted = mail.decrypt(verify: true, password: 's3cr3t')
+  puts "signature(s) valid: #{decrypted.signature_valid?}"
+  puts "message signed by: #{decrypted.signatures.map{|sig|sig.from}.join("\n")}"
+end
+```
+
+It's important to actually use the information contained in the `signatures`
+array to check if the message really has been signed by the person that you (or
+your users) think is the sender - usually by comparing the key id of the
+signature with the key id of the expected sender.
 
 ### Key import from public key servers
 

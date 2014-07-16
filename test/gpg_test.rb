@@ -36,8 +36,11 @@ class GpgTest < Test::Unit::TestCase
       assert sig.valid?
     end
     assert Mail::Gpg.signature_valid?(signed)
-    assert signed.verify_result.present?
-    assert signed.verify_result.signatures.any?
+    assert verified = signed.verify
+    assert verified.verify_result.present?
+    assert verified.verify_result.signatures.any?
+    assert verified.signatures.any?
+    assert verified.signature_valid?
   end
 
   def check_mime_structure_signed(mail = @mail, signed = @signed)
@@ -252,9 +255,9 @@ class GpgTest < Test::Unit::TestCase
       should 'decrypt and verify' do
         assert mail = Mail::Gpg.decrypt(@encrypted, { :verify => true, :password => 'abc' })
         assert mail == @mail
-        assert vr = mail.verify_result
-        assert sig = vr.signatures.first
-        assert sig.to_s=~ /Joe/
+        assert mail.verify_result
+        assert sig = mail.signatures.first
+        assert sig.to_s =~ /Joe/
         assert sig.valid?
       end
     end
@@ -365,9 +368,11 @@ class GpgTest < Test::Unit::TestCase
         assert mail = Mail::Gpg.decrypt(@encrypted, { :verify => true, :password => 'abc' })
         assert mail == @mail
         assert mail.parts[1] == @mail.parts[1]
-        assert vr = mail.verify_result
-        assert sig = vr.signatures.first
-        assert sig.to_s=~ /Joe/
+        assert mail.verify_result
+        assert signatures = mail.signatures
+        assert_equal 1, signatures.size
+        assert sig = signatures[0]
+        assert sig.to_s =~ /Joe/
         assert sig.valid?
       end
     end

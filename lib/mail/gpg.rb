@@ -12,6 +12,8 @@ require 'mail/gpg/gpgme_helper'
 require 'mail/gpg/message_patch'
 require 'mail/gpg/rails'
 require 'mail/gpg/signed_part'
+require 'mail/gpg/mime_signed_message'
+require 'mail/gpg/inline_signed_message'
 
 module Mail
   module Gpg
@@ -149,6 +151,16 @@ module Mail
       InlineDecryptedMessage.new(encrypted_mail, options)
     end
 
+    def self.verify(signed_mail, options = {})
+      if signed_mime?(signed_mail)
+        Mail::Gpg::MimeSignedMessage.new signed_mail, options
+      elsif signed_inline?(signed_mail)
+        Mail::Gpg::InlineSignedMessage.new signed_mail, options
+      else
+        signed_mail
+      end
+    end
+
     # check signature for PGP/MIME (RFC 3156, section 5) signed mail
     def self.signature_valid_pgp_mime?(signed_mail, options)
       # MUST contain exactly two body parts
@@ -164,7 +176,6 @@ module Mail
     def self.signature_valid_inline?(signed_mail, options)
       result = nil
       if signed_mail.multipart?
-
         signed_mail.parts.each do |part|
           if signed_inline?(part)
             if result.nil?
@@ -180,13 +191,6 @@ module Mail
         signed_mail.verify_result = verify_result
       end
       return result
-    end
-
-    INLINE_SIGNED_MARKER_RE = Regexp.new('^-----(BEGIN|END) PGP SIGNED MESSAGE-----$(\s*Hash: \w+$)?', Regexp::MULTILINE)
-    INLINE_SIG_RE = Regexp.new('^-----BEGIN PGP SIGNATURE-----\s*$.*^-----END PGP SIGNATURE-----\s*$', Regexp::MULTILINE)
-    # utility method to remove inline signature and related pgp markers
-    def self.strip_inline_signature(signed_text)
-      signed_text.gsub(INLINE_SIGNED_MARKER_RE, '').gsub(INLINE_SIG_RE, '').strip
     end
 
 

@@ -53,6 +53,7 @@ module Mail
         end
       end
 
+      # true if this mail is encrypted
       def encrypted?
         Mail::Gpg.encrypted?(self)
       end
@@ -65,17 +66,22 @@ module Mail
         Mail::Gpg.decrypt(self, options)
       end
 
+      # true if this mail is signed (but not encrypted)
       def signed?
         Mail::Gpg.signed?(self)
       end
 
-      # checks validity of signatures (true / false)
+      # verify signatures. returns a new mail object with signatures removed and
+      # populated verify_result.
       #
-      # after calling this, you can gain access the gpgme verification result
-      # via the verify_result method.
-      def signature_valid?(options = {})
-        Mail::Gpg.signature_valid?(self, options)
+      # verified = signed_mail.verify()
+      # verified.signature_valid?
+      # signers = mail.signatures.map{|sig| sig.from}
+      def verify(options = {})
+        Mail::Gpg.verify(self, options)
       end
+
+
     end
   end
 end
