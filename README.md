@@ -217,4 +217,5 @@ Thanks to:
 
 * [Planio GmbH](https://plan.io) for sponsoring the ongoing maintenance and development of this library
 * [morten-andersen](https://github.com/morten-andersen) for implementing decryption support for PGP/MIME and inline encrypted messages
-* [FewKinG](https://github.com/FewKinG) for implementing the sign only featur and keyserver url lookup
+* [FewKinG](https://github.com/FewKinG) for implementing the sign only feature and keyserver url lookup
+* [Fup Duck](https://github.com/duckdalbe) for various tweaks and fixes

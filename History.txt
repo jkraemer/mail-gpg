@@ -1,3 +1,7 @@
+== 0.2.1 2014-07-23
+
+* keep original message id if set
+
 == 0.2.0 2014-07-16
 
 * implement signature verification for inline signed messages
