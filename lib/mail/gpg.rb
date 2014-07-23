@@ -113,6 +113,9 @@ module Mail
             self.header[field] = h.value
           end
         end
+        if cleartext_mail.message_id
+          header['Message-ID'] = cleartext_mail['Message-ID'].value
+        end
         cleartext_mail.header.fields.each do |field|
           if MORE_HEADERS.include?(field.name) or field.name =~ /^X-/
             header[field.name] = field.value
