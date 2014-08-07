@@ -32,6 +32,8 @@ class Hkp
     open("#{@keyserver}/pks/lookup?options=mr&op=get&search=0x#{URI.escape id}") do |f|
       return clean_key f.read
     end
+  rescue Exception
+    nil
   end
 
   # fetches key data by id and imports the found key(s) into GPG, returning the full hex fingerprints of the
