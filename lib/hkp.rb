@@ -3,8 +3,16 @@ require 'gpgme'
 
 # simple HKP client for public key retrieval
 class Hkp
-  def initialize(keyserver = nil)
-    @keyserver = keyserver || lookup_keyserver || 'http://pool.sks-keyservers.net:11371'
+  def initialize(options = {})
+    if String === options
+      options = { keyserver: options }
+    end
+    @keyserver = options.delete(:keyserver) || lookup_keyserver || 'http://pool.sks-keyservers.net:11371'
+    @options = { raise_errors: true }.merge options
+  end
+
+  def raise_errors?
+    !!@options[:raise_errors]
   end
 
   # hkp.search 'user@host.com'
@@ -33,19 +41,19 @@ class Hkp
       return clean_key f.read
     end
   rescue Exception
+    raise $! if raise_errors?
     nil
   end
 
   # fetches key data by id and imports the found key(s) into GPG, returning the full hex fingerprints of the
   # imported key(s) as an array. Given there are no collisions with the id given / the server has returned
   # exactly one key this will be a one element array.
-  def fetch_and_import(id, options = {})
-    options = { raise_errors: true }.merge options
+  def fetch_and_import(id)
     if key = fetch(id)
       GPGME::Key.import(key).imports.map(&:fpr)
     end
   rescue Exception
-    raise $! if options[:raise_errors]
+    raise $! if raise_errors?
   end
 
   private

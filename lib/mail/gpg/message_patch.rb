@@ -98,12 +98,12 @@ module Mail
       end
 
       def import_keys_for_signatures!(signatures = [])
-        hkp = Hkp.new
+        hkp = Hkp.new raise_errors: false
         signatures.each do |sig|
           begin
             sig.key
           rescue EOFError # gpgme throws this for unknown keys :(
-            hkp.fetch_and_import sig.fingerprint, raise_errors: false
+            hkp.fetch_and_import sig.fingerprint
           end
         end
       end
