@@ -1,3 +1,8 @@
+== 0.2.2 2014-09-03
+
+* add option to import missing keys for signature verification
+* better Hkp error handling
+
 == 0.2.1 2014-07-23
 
 * keep original message id if set
