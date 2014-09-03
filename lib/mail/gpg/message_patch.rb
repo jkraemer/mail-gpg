@@ -1,3 +1,4 @@
+require 'hkp'
 require 'mail/gpg/delivery_handler'
 require 'mail/gpg/verify_result_attribute'
 
@@ -63,7 +64,13 @@ module Mail
       # pass verify: true to verify signatures as well. The gpgme verification
       # result will be available via decrypted_mail.verify_result
       def decrypt(options = {})
-        Mail::Gpg.decrypt(self, options)
+        import_missing_keys = options[:verify] && options.delete(:import_missing_keys)
+        Mail::Gpg.decrypt(self, options).tap do |decrypted|
+          if import_missing_keys && !decrypted.signature_valid?
+            import_keys_for_signatures! decrypted.signatures
+            return Mail::Gpg.decrypt(self, options)
+          end
+        end
       end
 
       # true if this mail is signed (but not encrypted)
@@ -77,8 +84,28 @@ module Mail
       # verified = signed_mail.verify()
       # verified.signature_valid?
       # signers = mail.signatures.map{|sig| sig.from}
+      #
+      # use import_missing_keys: true in order to try to fetch and import
+      # unknown keys for signature validation
       def verify(options = {})
-        Mail::Gpg.verify(self, options)
+        import_missing_keys = options.delete(:import_missing_keys)
+        Mail::Gpg.verify(self, options).tap do |verified|
+          if import_missing_keys && !verified.signature_valid?
+            import_keys_for_signatures! verified.signatures
+            return Mail::Gpg.verify(self, options)
+          end
+        end
+      end
+
+      def import_keys_for_signatures!(signatures = [])
+        hkp = Hkp.new
+        signatures.each do |sig|
+          begin
+            sig.key
+          rescue EOFError # gpgme throws this for unknown keys :(
+            hkp.fetch_and_import sig.fingerprint, raise_errors: false
+          end
+        end
       end
 
 

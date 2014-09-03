@@ -39,10 +39,13 @@ class Hkp
   # fetches key data by id and imports the found key(s) into GPG, returning the full hex fingerprints of the
   # imported key(s) as an array. Given there are no collisions with the id given / the server has returned
   # exactly one key this will be a one element array.
-  def fetch_and_import(id)
+  def fetch_and_import(id, options = {})
+    options = { raise_errors: true }.merge options
     if key = fetch(id)
       GPGME::Key.import(key).imports.map(&:fpr)
     end
+  rescue Exception
+    raise $! if options[:raise_errors]
   end
 
   private
