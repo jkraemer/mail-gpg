@@ -39,9 +39,17 @@ END
   end
 end
 
-task :default => [:test]
+task :default => ["mail_gpg:tests:setup", :test]
+
+namespace :mail_gpg do
+  namespace :tests do
+    task :setup do
+      setup_gpghome
+    end
+  end
+end
+
 Rake::TestTask.new(:test) do |test|
-  setup_gpghome
   test.libs << 'test'
   test.test_files = FileList['test/**/*_test.rb']
   test.verbose = true
