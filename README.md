@@ -191,6 +191,7 @@ Mail::Message#gpg method.
 Test cases use a mock gpghome located in `test/gpghome` in order to not mess
 around with your personal gpg keychain.
 
+Password for the test PGP private keys is `abc`
 
 ## Todo
 
