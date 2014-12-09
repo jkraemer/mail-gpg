@@ -9,7 +9,6 @@ as for example supported in the Mozilla Enigmail OpenPGP plugin.
 There may still be GPG encrypted messages that can not be handled by the library, as there are some legacy formats used in the
 wild as described in this [Know your PGP implementation](http://binblog.info/2008/03/12/know-your-pgp-implementation/) blog.
 
-
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -23,7 +22,6 @@ And then execute:
 Or install it yourself as:
 
     $ gem install mail-gpg
-
 
 ## Usage
 
@@ -48,13 +46,11 @@ with the gpg method:
       # encrypt and sign message using a different key
       gpg encrypt: true, sign_as: 'joe@otherdomain.com', password: 'secret'
 
-
       # encrypt and sign message and use a callback function to provide the
       # passphrase.
       gpg encrypt: true, sign_as: 'joe@otherdomain.com',
           passphrase_callback: ->(obj, uid_hint, passphrase_info, prev_was_bad, fd){puts "Enter passphrase for #{passphrase_info}: "; (IO.for_fd(fd, 'w') << readline.chomp).flush }
     end.deliver
-
 
 Make sure all recipients' public keys are present in your local gpg keychain.
 You will get errors in case encryption is not possible due to missing keys.
@@ -81,7 +77,6 @@ updating it's db when necessary.
 
 You may also want to have a look at the [GPGME](https://github.com/ueno/ruby-gpgme) docs and code base for more info on the various options, especially regarding the `passphrase_callback` arguments.
 
-
 ### Decrypting
 
 Receive the mail as usual. Check if it is encrypted using the `encrypted?` method. Get a decrypted version of the mail with the `decrypt` method:
@@ -101,16 +96,14 @@ Set the `:verify` option to `true` when calling `decrypt` to decrypt *and* verif
 A `GPGME::Error::BadPassphrase` will be raised if the password for the private key is incorrect.
 A `EncodingError` will be raised if the encrypted mails is not encoded correctly as a [RFC 3156](http://www.ietf.org/rfc/rfc3156.txt) message.
 
-
 ### Signing only
 
 Just leave the `:encrypt` option out or pass `encrypt: false`, i.e.
 
-
     Mail.new do
       to 'jane@doe.net'
       gpg sign: true
-    end.deliver 
+    end.deliver
 
 ### Verify signature(s)
 
@@ -202,7 +195,6 @@ Password for the test PGP private keys is `abc`
 * add some setup code to help initialize a basic keychain directory with
   public/private keypair.
 
-
 ## Contributing
 
 1. Fork it
@@ -210,7 +202,6 @@ Password for the test PGP private keys is `abc`
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
-
 
 ## Credits
 
