@@ -177,6 +177,26 @@ hkp.fetch_and_import(id)
 The gpg option takes the same arguments as outlined above for the
 Mail::Message#gpg method.
 
+### Encrypting with sender's key
+
+You can optionally encrypt all outgoing emails with senders key. Add the following
+to `config/application.rb`
+
+```ruby
+    module MyRailsApp
+      class Application < Rails::Application
+
+        config.action_mailer.gpg_encrypt_sender = {
+          keys: {
+           'support@company.biz' => support_key,
+           'tech@company.biz' => tech_key
+          }
+        }
+
+      end
+    end
+```
+
 ## Running the tests
 
     bundle exec rake
