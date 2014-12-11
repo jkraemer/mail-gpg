@@ -17,12 +17,6 @@ class MyMailer < ActionMailer::Base
     mail subject: 'encrypted', body: 'encrypted mail', return_path: (bouncy && bounce_address), gpg: {encrypt: true}
   end
 
-  def encrypted_with_key(bouncy=false)
-    mail subject: 'encrypted', body: 'encrypted mail', return_path: (bouncy && bounce_address), gpg: {
-      encrypt: true, keys: { "john@foo.bar" => "secret key" }
-    }
-  end
-
   def signed(bouncy=false)
     mail  from: 'jane@foo.bar',
           to: 'joe@foo.bar',
@@ -56,7 +50,6 @@ class ActionMailerTest < Test::Unit::TestCase
         assert m = @emails.first
         assert_equal 'unencrypted', m.subject
       end
-
 
       should "send encrypted mail" do
         assert m = MyMailer.encrypted
