@@ -28,8 +28,9 @@ module Mail
       # mail.gpg encrypt: true, sign: true
       # mail.gpg encrypt: true, sign_as: "other_address@host.com"
       #
-      # future versions will also support sign-only mode:
-      # mail.gpg sign_as: 'jane@doe.com', encrypt: false
+      # sign-only mode is also supported:
+      # mail.gpg sign: true
+      # mail.gpg sign_as: 'jane@doe.com'
       #
       # To turn off gpg encryption use:
       # mail.gpg false
@@ -44,13 +45,11 @@ module Mail
             self.delivery_handler = nil
           end
           nil
-        end
-        if options
+        else
           self.raise_encryption_errors = true if raise_encryption_errors.nil?
           @gpg = options
           self.delivery_handler ||= Mail::Gpg::DeliveryHandler
-        else
-          @gpg
+          nil
         end
       end
 
