@@ -1,3 +1,7 @@
+== 0.2.3 2015-02-18
+
+* inline pgp detection now ignores signature.asc attachments
+
 == 0.2.2 2014-09-03
 
 * add option to import missing keys for signature verification
