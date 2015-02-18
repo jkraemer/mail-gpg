@@ -213,7 +213,10 @@ module Mail
           return true if part.body.include?('-----BEGIN PGP MESSAGE-----')
           return true if part.has_content_type? &&
             /application\/(?:octet-stream|pgp-encrypted)/ =~ part.mime_type &&
-            /.*\.(?:pgp|gpg|asc)$/ =~ part.content_type_parameters[:name]
+            /.*\.(?:pgp|gpg|asc)$/ =~ part.content_type_parameters[:name] &&
+            'signature.asc' != part.content_type_parameters[:name]
+          # that last condition above prevents false positives in case e.g.
+          # someone forwards a mime signed mail including signature.
         end
       end
       false
