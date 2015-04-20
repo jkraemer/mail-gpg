@@ -74,11 +74,13 @@ class MessageTest < Test::Unit::TestCase
       context "" do
         setup do
           @mail.header['Auto-Submitted'] = 'foo'
+          @mail.header['List-Unsubscribe'] = 'bar'
           @mail.deliver
         end
 
         should 'keep custom header value' do
           assert_equal 'foo', @mails.first.header['Auto-Submitted'].value
+          assert_equal 'bar', @mails.first.header['List-Unsubscribe'].value
         end
 
         should "deliver signed mail" do
