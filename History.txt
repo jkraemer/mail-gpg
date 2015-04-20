@@ -1,3 +1,8 @@
+== 0.2.4 2015-04-20
+
+* preserve List-Id and List-Unsubscribe headers
+* run tests on travis under Ruby 2.2.2
+
 == 0.2.3 2015-02-18
 
 * inline pgp detection now ignores signature.asc attachments
