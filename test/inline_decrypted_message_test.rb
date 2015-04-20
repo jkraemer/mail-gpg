@@ -76,7 +76,7 @@ class InlineDecryptedMessageTest < Test::Unit::TestCase
         assert !decrypted.encrypted?
         check_headers(@mail, decrypted)
         assert_equal 2, decrypted.parts.length
-        assert_equal @mail.body, decrypted.parts[0].body.to_s
+        assert @mail.body.to_s == decrypted.parts[0].body.to_s
         assert /application\/octet-stream; (?:charset=UTF-8; )?name=Rakefile/ =~ decrypted.parts[1].content_type
         assert_equal 'attachment; filename=Rakefile', decrypted.parts[1].content_disposition
         assert_equal rakefile, decrypted.parts[1].body.decoded
@@ -108,7 +108,7 @@ class InlineDecryptedMessageTest < Test::Unit::TestCase
         assert !decrypted.encrypted?
         check_headers(@mail, decrypted)
         assert_equal 2, decrypted.parts.length
-        assert_equal @mail.body, decrypted.parts[0].body.to_s
+        assert @mail.body.to_s == decrypted.parts[0].body.to_s
         assert /application\/octet-stream; (?:charset=UTF-8; )?name=Rakefile/ =~ decrypted.parts[1].content_type
         assert_equal 'attachment; filename=Rakefile', decrypted.parts[1].content_disposition
         assert_equal rakefile, decrypted.parts[1].body.decoded
