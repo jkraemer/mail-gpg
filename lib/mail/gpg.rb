@@ -232,10 +232,10 @@ module Mail
     # check if inline PGP (i.e. if any parts of the mail includes
     # the PGP SIGNED marker)
     def self.signed_inline?(mail)
-      return true if mail.body.include?('-----BEGIN PGP SIGNED MESSAGE-----')
+      return true if mail.body.to_s =~ /^-----BEGIN PGP SIGNED MESSAGE-----/
       if mail.multipart?
         mail.parts.each do |part|
-          return true if part.body.include?('-----BEGIN PGP SIGNED MESSAGE-----')
+          return true if part.body.to_s =~ /^-----BEGIN PGP SIGNED MESSAGE-----/
         end
       end
       false
