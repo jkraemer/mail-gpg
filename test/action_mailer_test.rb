@@ -7,6 +7,12 @@ class MyMailer < ActionMailer::Base
     mail subject: 'unencrypted', body: 'unencrypted mail', return_path: (bouncy && bounce_address)
   end
 
+  def encrypted_with_key(bouncy=false)
+    mail subject: 'encrypted', body: 'encrypted mail', return_path: (bouncy && bounce_address), gpg: {
+      encrypt: true, keys: { "john@foo.bar" => "secret key" }
+    }
+  end
+
   def encrypted(bouncy=false)
     mail subject: 'encrypted', body: 'encrypted mail', return_path: (bouncy && bounce_address), gpg: {encrypt: true}
   end
@@ -45,7 +51,6 @@ class ActionMailerTest < Test::Unit::TestCase
         assert_equal 'unencrypted', m.subject
       end
 
-
       should "send encrypted mail" do
         assert m = MyMailer.encrypted
         assert true == m.gpg[:encrypt]
@@ -74,6 +79,29 @@ class ActionMailerTest < Test::Unit::TestCase
           assert sig.valid?
         end
       end
+
+       should "encrypt with senders key if provided global configuration" do
+        before_run = ActionMailer::Base.gpg_encrypt_sender
+        ActionMailer::Base.gpg_encrypt_sender = {
+          keys: { "john@foo.bar" => "somekey" }
+        }
+        assert m = MyMailer.encrypted
+        assert true == m.gpg[:encrypt]
+        assert "somekey" == m.gpg[:keys]["john@foo.bar"]
+        ActionMailer::Base.gpg_encrypt_sender = before_run
+      end
+
+      should "prefer key specified by the mailer over global configuration" do
+        before_run = ActionMailer::Base.gpg_encrypt_sender
+        ActionMailer::Base.gpg_encrypt_sender = {
+          keys: { "john@foo.bar" => "somekey" }
+        }
+        assert m = MyMailer.encrypted_with_key
+        assert true == m.gpg[:encrypt]
+        assert "secret key" == m.gpg[:keys]["john@foo.bar"]
+        ActionMailer::Base.gpg_encrypt_sender = before_run
+      end
+
     end
   end
 
