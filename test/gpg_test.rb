@@ -20,6 +20,11 @@ class GpgTest < Test::Unit::TestCase
     enc_part.content_type
   end
 
+  def check_attachment_name(mail = @mail, encrypted = @encrypted)
+    v_part, enc_part = encrypted.parts
+    assert_equal 'application/octet-stream; name=custom_filename.asc', enc_part.content_type
+  end
+
   def check_content(mail = @mail, encrypted = @encrypted)
     assert enc = encrypted.parts.last
     assert clear = GPGME::Crypto.new.decrypt(enc.to_s, password: 'abc').to_s
@@ -232,6 +237,16 @@ class GpgTest < Test::Unit::TestCase
       should 'decrypt' do
         assert mail = Mail::Gpg.decrypt(@encrypted, { :password => 'abc' })
         assert mail == @mail
+      end
+    end
+
+    context 'simple mail (custom filename)' do
+      setup do
+        @encrypted = Mail::Gpg.encrypt(@mail, {filename: 'custom_filename.asc'})
+      end
+
+      should 'have same custom attachment filename' do
+        check_attachment_name
       end
     end
 
