@@ -22,7 +22,7 @@ module Mail
           body encrypted.to_s
           filename = options[:filename] || 'encrypted.asc'
           content_type "#{CONTENT_TYPE}; name=\"#{filename}\""
-          content_disposition 'inline; filename="#{filename}"'
+          content_disposition "inline; filename=\"#{filename}\""
           content_description 'OpenPGP encrypted message'
         end
       end
