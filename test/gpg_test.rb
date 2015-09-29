@@ -23,6 +23,7 @@ class GpgTest < Test::Unit::TestCase
   def check_attachment_name(mail = @mail, encrypted = @encrypted)
     v_part, enc_part = encrypted.parts
     assert_equal 'application/octet-stream; name=custom_filename.asc', enc_part.content_type
+    assert_equal 'inline; filename=custom_filename.asc', enc_part.content_disposition
   end
 
   def check_content(mail = @mail, encrypted = @encrypted)
