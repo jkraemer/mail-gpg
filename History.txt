@@ -1,3 +1,7 @@
+== 0.2.5 2015-09-30
+
+* allow overriding of encrypted attachment name (patch by @chrislewis60)
+
 == 0.2.4 2015-04-20
 
 * preserve List-Id and List-Unsubscribe headers
