@@ -31,8 +31,9 @@ module Mail
                   p.content_transfer_encoding Mail::Encodings::Base64
                   p.body Mail::Encodings::Base64::encode(decrypted.to_s)
                 else
-                  if part.body.include?('-----BEGIN PGP MESSAGE-----')
-                    decrypted = GpgmeHelper.decrypt(part.decoded, options)
+                  body = part.body.decoded
+                  if body.include?('-----BEGIN PGP MESSAGE-----')
+                    decrypted = GpgmeHelper.decrypt(body, options)
                     p.verify_result decrypted.verify_result if options[:verify]
                     p.body decrypted.to_s
                   else
