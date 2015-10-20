@@ -1,3 +1,7 @@
+== 0.2.6 2015-10-20
+
+* fix handling of inline encrypted messages
+
 == 0.2.5 2015-09-30
 
 * allow overriding of encrypted attachment name (patch by @chrislewis60)
