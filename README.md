@@ -184,6 +184,42 @@ hkp.fetch_and_import(id)
 The gpg option takes the same arguments as outlined above for the
 Mail::Message#gpg method.
 
+
+## Passwords and GnuPG versions >= 2.x
+
+GnuPG versions >= 2.x require the use of gpg-agent for key-handling. That's a problem for using password-protected keys non-interactively, because gpg-agent doesn't read from file-descriptors (which is the usual way to non-interactively provide passwords with GnuPG 1.x).
+
+With GnuPG 2.x you have two options to provide passwords to gpg-agent:
+
+1. Implement a pinentry-kind-of program that speaks the assuan-protocol and configure gpg-agent to use it.
+2. Run gpg-preset-passphrase and allow gpg-agent to read preset passwords.
+
+The second options is somewhat easier and is described below.
+
+Note: You *don't* need this if your key is *not* protected with a password.
+
+
+To feed a password into gpg-agent run this code early in your program:
+
+```ruby
+# The next two lines need adaption, obviously.
+fpr = fingerprint_of_key_to_unlock
+passphrase = gpg_passphrase_for_key
+# You may copy&paste the rest of this block unchanged. Maybe you want to change the error-handling, though.
+ENV['GPG_AGENT_INFO'] = `eval $(gpg-agent --allow-preset-passphrase --daemon) && echo $GPG_AGENT_INFO`
+`gpgconf --list-dir`.match(/libexecdir:(.*)/)
+gppbin = File.join($1, 'gpg-preset-passphrase')
+Open3.popen3(gppbin, '--preset', fpr) do |stdin, stdout, stderr|
+  stdin.puts passphrase
+  err = stderr.readlines
+  $stderr.puts err if ! err.to_s.empty?
+end
+# Hook to kill our gpg-agent when script finishes.
+Signal.trap(0, proc {  Process.kill('TERM', ENV['GPG_AGENT_INFO'].split(':')[1]) })
+
+```
+
+
 ## Running the tests
 
     bundle exec rake
