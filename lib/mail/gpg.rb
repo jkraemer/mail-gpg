@@ -101,7 +101,7 @@ module Mail
     end
 
     STANDARD_HEADERS = %w(from to cc bcc reply_to subject in_reply_to return_path message_id)
-    MORE_HEADERS = %w(Auto-Submitted List-Id List-Unsubscribe References)
+    MORE_HEADERS = %w(Auto-Submitted List-Help List-Id List-Owner List-Post List-Unsubscribe OpenPGP References)
 
     private
 

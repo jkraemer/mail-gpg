@@ -74,13 +74,23 @@ class MessageTest < Test::Unit::TestCase
       context "" do
         setup do
           @mail.header['Auto-Submitted'] = 'foo'
+          @mail.header['List-Help'] = 'https://lists.example.org/help/'
+          @mail.header['List-Id'] = 'test.lists.example.org'
+          @mail.header['List-Owner'] = 'test-owner@lists.example.org'
+          @mail.header['List-Post'] = '<mailto:test@lists.example.org> (Subscribers only)'
           @mail.header['List-Unsubscribe'] = 'bar'
+          @mail.header['OpenPGP'] = 'id=0x0123456789abcdef0123456789abcdefdeadbeef (present on keyservers); (Only encrypted and signed emails are accepted)'
           @mail.deliver
         end
 
         should 'keep custom header value' do
           assert_equal 'foo', @mails.first.header['Auto-Submitted'].value
+          assert_equal 'https://lists.example.org/help/', @mails.first.header['List-Help'].value
+          assert_equal 'test.lists.example.org', @mails.first.header['List-Id'].value
+          assert_equal 'test-owner@lists.example.org', @mails.first.header['List-Owner'].value
+          assert_equal '<mailto:test@lists.example.org> (Subscribers only)', @mails.first.header['List-Post'].value
           assert_equal 'bar', @mails.first.header['List-Unsubscribe'].value
+          assert_equal 'id=0x0123456789abcdef0123456789abcdefdeadbeef (present on keyservers); (Only encrypted and signed emails are accepted)', @mails.first.header['OpenPGP'].value
         end
 
         should "deliver signed mail" do
