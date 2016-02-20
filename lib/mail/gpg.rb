@@ -101,7 +101,7 @@ module Mail
     end
 
     STANDARD_HEADERS = %w(from to cc bcc reply_to subject in_reply_to return_path message_id)
-    MORE_HEADERS = %w(Auto-Submitted List-Help List-Id List-Owner List-Post List-Unsubscribe OpenPGP References)
+    MORE_HEADERS = %w(Auto-Submitted OpenPGP References)
 
     private
 
@@ -117,7 +117,7 @@ module Mail
           header['Message-ID'] = cleartext_mail['Message-ID'].value
         end
         cleartext_mail.header.fields.each do |field|
-          if MORE_HEADERS.include?(field.name) or field.name =~ /^X-/
+          if MORE_HEADERS.include?(field.name) or field.name =~ /^(List|X)-/
             header[field.name] = field.value
           end
         end
