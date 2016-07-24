@@ -14,3 +14,5 @@ matrix:
       env: RAILS=5.0.0.0
 before_install:
   - gem update bundler
+sudo: false
+cache: bundler
