@@ -4,10 +4,10 @@ module Mail
   module Gpg
     class MimeSignedMessage < Mail::Message
 
-      def initialize(signed_mail, options = {})
+      def self.setup(signed_mail, options = {})
         content_part, signature = signed_mail.parts
         success, vr = SignPart.verify_signature(content_part, signature, options)
-        super() do
+        self.new do
           verify_result vr
           signed_mail.header.fields.each do |field|
             header[field.name] = field.value

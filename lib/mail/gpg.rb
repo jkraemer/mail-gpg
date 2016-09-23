@@ -151,14 +151,14 @@ module Mail
 
     # decrypts inline PGP encrypted mail
     def self.decrypt_pgp_inline(encrypted_mail, options)
-      InlineDecryptedMessage.new(encrypted_mail, options)
+      InlineDecryptedMessage.setup(encrypted_mail, options)
     end
 
     def self.verify(signed_mail, options = {})
       if signed_mime?(signed_mail)
-        Mail::Gpg::MimeSignedMessage.new signed_mail, options
+        Mail::Gpg::MimeSignedMessage.setup signed_mail, options
       elsif signed_inline?(signed_mail)
-        Mail::Gpg::InlineSignedMessage.new signed_mail, options
+        Mail::Gpg::InlineSignedMessage.setup signed_mail, options
       else
         signed_mail
       end

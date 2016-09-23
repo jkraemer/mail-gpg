@@ -12,9 +12,9 @@ module Mail
       # options are:
       #
       # :verify: decrypt and verify
-      def initialize(cipher_mail, options = {})
+      def self.setup(cipher_mail, options = {})
         if cipher_mail.multipart?
-          super() do
+          self.new do
             cipher_mail.header.fields.each do |field|
               header[field.name] = field.value
             end
@@ -48,7 +48,7 @@ module Mail
           end # of multipart
         else
           decrypted = cipher_mail.body.empty? ? '' : GpgmeHelper.decrypt(cipher_mail.body.decoded, options)
-          super() do
+          self.new do
             cipher_mail.header.fields.each do |field|
               header[field.name] = field.value
             end
