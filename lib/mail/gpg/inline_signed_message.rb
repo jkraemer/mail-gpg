@@ -4,9 +4,9 @@ module Mail
   module Gpg
     class InlineSignedMessage < Mail::Message
 
-      def initialize(signed_mail, options = {})
+      def self.setup(signed_mail, options = {})
         if signed_mail.multipart?
-          super() do
+          self.new do
             global_verify_result = []
             signed_mail.header.fields.each do |field|
               header[field.name] = field.value
@@ -29,7 +29,7 @@ module Mail
             verify_result global_verify_result
           end # of multipart
         else
-          super() do
+          self.new do
             signed_mail.header.fields.each do |field|
               header[field.name] = field.value
             end
