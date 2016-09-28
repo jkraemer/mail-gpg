@@ -1,3 +1,10 @@
+== 0.2.7 2016-09-28
+
+* fix replying to message objects #35
+* remove usage of deprecated alias_method_chain
+* fix tests with Rails >= 4
+* run tests with Rails 5, bump versions in travis config
+
 == 0.2.6 2015-10-20
 
 * fix handling of inline encrypted messages
