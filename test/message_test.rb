@@ -5,6 +5,7 @@ class MessageTest < Test::Unit::TestCase
   context "Mail::Message" do
 
     setup do
+      set_passphrase('abc')
       (@mails = Mail::TestMailer.deliveries).clear
       @mail = Mail.new do
         to 'jane@foo.bar'
@@ -210,11 +211,12 @@ class MessageTest < Test::Unit::TestCase
           assert m = @mails.first
           assert_equal 'test', m.subject
           # incorrect passphrase
-          assert_raises(GPGME::Error::BadPassphrase){
+          set_passphrase('incorrect')
+          assert_raises(GPGME::Error::DecryptFailed){
             m.decrypt(:password => 'incorrect')
           }
           # no passphrase
-          assert_raises(GPGME::Error::BadPassphrase){
+          assert_raises(GPGME::Error::DecryptFailed){
             m.decrypt
           }
         end
