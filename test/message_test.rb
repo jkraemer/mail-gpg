@@ -211,12 +211,17 @@ class MessageTest < Test::Unit::TestCase
           assert m = @mails.first
           assert_equal 'test', m.subject
           # incorrect passphrase
-          set_passphrase('incorrect')
-          assert_raises(GPGME::Error::DecryptFailed){
+          if GPG21 == true
+            set_passphrase('incorrect')
+            expected_exception = GPGME::Error::DecryptFailed
+          else
+            expected_exception = GPGME::Error::BadPassphrase
+          end
+          assert_raises(expected_exception){
             m.decrypt(:password => 'incorrect')
           }
           # no passphrase
-          assert_raises(GPGME::Error::DecryptFailed){
+          assert_raises(expected_exception){
             m.decrypt
           }
         end
