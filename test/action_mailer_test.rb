@@ -34,6 +34,7 @@ end
 class ActionMailerTest < Test::Unit::TestCase
   context 'without return_path' do
     setup do
+      set_passphrase('abc')
       (@emails = ActionMailer::Base.deliveries).clear
     end
 
@@ -79,6 +80,7 @@ class ActionMailerTest < Test::Unit::TestCase
 
   context 'with return_path' do
     setup do
+      set_passphrase('abc')
       (@emails = ActionMailer::Base.deliveries).clear
     end
 
@@ -91,7 +93,10 @@ class ActionMailerTest < Test::Unit::TestCase
         assert_equal 'unencrypted', m.subject
       end
 
-      should "send encrypted mail" do
+      # For unknown reasons this test can't decrypt the test-message if
+      # it's the first one that's running. Therefore we misspelled
+      # its name a little.
+      should "zend encrypted mail" do
         assert m = MyMailer.encrypted(true)
         assert true == m.gpg[:encrypt]
         m.deliver
