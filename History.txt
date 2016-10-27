@@ -1,3 +1,7 @@
+== 0.2.8 2016-10-26
+
+* fix tests with gnupg2 (patch by @duckdalbe)
+
 == 0.2.7 2016-09-28
 
 * fix replying to message objects #35
