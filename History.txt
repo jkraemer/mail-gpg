@@ -1,3 +1,7 @@
+== 0.2.9 2016-11-15
+
+* add missing require to test case (patch by @ge-fa)
+
 == 0.2.8 2016-10-26
 
 * fix tests with gnupg2 (patch by @duckdalbe)
