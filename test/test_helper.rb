@@ -1,3 +1,4 @@
+require 'open3'
 require 'test/unit'
 require 'shoulda/context'
 require 'mail-gpg'
