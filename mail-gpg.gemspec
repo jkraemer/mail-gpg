@@ -24,6 +24,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "test-unit", "~> 3.0"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "actionmailer", ">= 3.2.0"
-  spec.add_development_dependency "pry-nav"
+  spec.add_development_dependency "byebug"
   spec.add_development_dependency "shoulda-context", '~> 1.1'
 end

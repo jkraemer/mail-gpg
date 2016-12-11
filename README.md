@@ -151,6 +151,18 @@ You can specify the keyserver url when initializing the class:
 hkp = Hkp.new("hkp://my-key-server.de")
 ```
 
+Or, if you want to override how ssl certificates should be treated in case of
+TLS-secured keyservers (the default is `VERIFY_PEER`):
+
+```
+hkp = Hkp.new(keyserver: "hkps://another.key-server.com",
+              ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE)
+```
+
+If no port is specified in hkp or hkps URIs (as in the examples above), port
+11371 will be used for hkp and port 443 for hkps URIs. Standard `http` or
+`https` URIs with or without explicitly set ports work as well.
+
 If no url is given, this gem will try to determine the default keyserver
 url from the system's gpg config (using `gpgconf` if available or by
 parsing the `gpg.conf` file). As a last resort, the server-pool at

@@ -1,8 +1,66 @@
-require 'open-uri'
 require 'gpgme'
+require 'openssl'
+require 'net/http'
 
-# simple HKP client for public key retrieval
+# simple HKP client for public key search and retrieval
 class Hkp
+
+  class TooManyRedirects < StandardError; end
+
+  class InvalidResponse < StandardError; end
+
+
+  class Client
+
+    MAX_REDIRECTS = 3
+
+    def initialize(server, ssl_verify_mode: OpenSSL::SSL::VERIFY_PEER)
+      uri = URI server
+      @host = uri.host
+      @port = uri.port
+      @use_ssl = false
+      @ssl_verify_mode = ssl_verify_mode
+
+      # set port and ssl flag according to URI scheme
+      case uri.scheme.downcase
+      when 'hkp'
+        # use the HKP default port unless another port has been given
+        @port ||= 11371
+      when /\A(hkp|http)s\z/
+        # hkps goes through 443 by default
+        @port ||= 443
+        @use_ssl = true
+      end
+      @port ||= 80
+    end
+
+
+    def get(path, redirect_depth = 0)
+      Net::HTTP.start @host, @port, use_ssl: @use_ssl,
+                                    verify_mode: @ssl_verify_mode do |http|
+
+        request = Net::HTTP::Get.new path
+        response = http.request request
+
+        case response.code.to_i
+        when 200
+          return response.body
+        when 301, 302
+          if redirect_depth >= MAX_REDIRECTS
+            raise TooManyRedirects
+          else
+            http_get response['location'], redirect_depth + 1
+          end
+        else
+          raise InvalidResponse, response.code
+        end
+
+      end
+    end
+
+  end
+
+
   def initialize(options = {})
     if String === options
       options = { keyserver: options }
@@ -15,6 +73,7 @@ class Hkp
     !!@options[:raise_errors]
   end
 
+  #
   # hkp.search 'user@host.com'
   # will return an array of arrays, one for each matching key found, containing
   # the key id as the first elment and any further info returned by the key
@@ -24,26 +83,32 @@ class Hkp
   # and what info they return besides the key id
   def search(name)
     [].tap do |results|
-      open("#{@keyserver}/pks/lookup?options=mr&search=#{URI.escape name}") do |f|
-        f.each_line do |l|
-          components = l.strip.split(':')
-          if components.shift == 'pub'
-            results << components
-          end
+      result = hkp_client.get "/pks/lookup?options=mr&search=#{URI.escape name}"
+
+      result.each_line do |l|
+        components = l.strip.split(':')
+        if components.shift == 'pub'
+          results << components
         end
-      end
+      end if result
     end
+
+  rescue
+    raise $! if raise_errors?
+    nil
   end
+
 
   # returns the key data as returned from the server as a string
   def fetch(id)
-    open("#{@keyserver}/pks/lookup?options=mr&op=get&search=0x#{URI.escape id}") do |f|
-      return clean_key f.read
-    end
+    result = hkp_client.get "/pks/lookup?options=mr&op=get&search=0x#{URI.escape id}"
+    return clean_key(result) if result
+
   rescue Exception
     raise $! if raise_errors?
     nil
   end
+
 
   # fetches key data by id and imports the found key(s) into GPG, returning the full hex fingerprints of the
   # imported key(s) as an array. Given there are no collisions with the id given / the server has returned
@@ -57,6 +122,11 @@ class Hkp
   end
 
   private
+
+  def hkp_client
+    @hkp_client ||= Client.new @keyserver, ssl_verify_mode: @options[:ssl_verify_mode]
+  end
+
   def clean_key(key)
     if key =~ /(-----BEGIN PGP PUBLIC KEY BLOCK-----.*-----END PGP PUBLIC KEY BLOCK-----)/m
       return $1
@@ -83,3 +153,4 @@ class Hkp
   end
 
 end
+
