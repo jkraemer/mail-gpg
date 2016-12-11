@@ -19,7 +19,7 @@ class InlineSignedMessageTest < Test::Unit::TestCase
       should 'strip signature from signed text' do
         body = self.class.inline_sign(@mail, 'i am signed')
         assert stripped_body = Mail::Gpg::InlineSignedMessage.strip_inline_signature(body)
-        assert_equal "-----BEGIN PGP SIGNED MESSAGE-----\nHash: SHA1\n\ni am signed\n-----END PGP SIGNED MESSAGE-----", stripped_body
+        assert_equal "-----BEGIN PGP SIGNED MESSAGE-----\n\ni am signed\n-----END PGP SIGNED MESSAGE-----", stripped_body
       end
 
       should 'not change unsigned text' do

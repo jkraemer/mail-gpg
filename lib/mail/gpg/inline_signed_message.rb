@@ -62,7 +62,8 @@ module Mail
           signed_text.gsub! INLINE_SIG_RE, ''
           signed_text.strip!
         end
-        signed_text
+        # Strip possible inline-"headers" (e.g. "Hash: SHA256", or "Comment: something").
+        signed_text.gsub(/(.*^-----BEGIN PGP SIGNED MESSAGE-----\n)(.*?)^$(.+)/m, '\1\3')
       end
 
     end
