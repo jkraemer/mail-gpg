@@ -135,7 +135,7 @@ module Mail
         raise EncodingError, "RFC 3136 first part not a valid version part '#{encrypted_mail.parts[0]}'"
       end
       decrypted = DecryptedPart.new(encrypted_mail.parts[1], options)
-      Mail.new(decrypted) do
+      Mail.new(decrypted.raw_source) do
         %w(from to cc bcc subject reply_to in_reply_to).each do |field|
           send field, encrypted_mail.send(field)
         end
