@@ -4,7 +4,7 @@ require 'hkp'
 
 class HkpTest < Test::Unit::TestCase
 
-  context "hpk client key server setup" do
+  context "hpk client" do
     {
       "http://pool.sks-keyservers.net:11371" => {
         host: 'pool.sks-keyservers.net',
@@ -50,22 +50,25 @@ class HkpTest < Test::Unit::TestCase
 
         end
 
+        if ENV['ONLINE_TESTS']
 
-        context 'key search' do
+          context 'key search' do
 
-          setup do
-            @hkp = Hkp.new keyserver: url,
-                           ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE
-          end
+            setup do
+              @hkp = Hkp.new keyserver: url,
+                             ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE
+            end
 
-          should 'find key' do
-            assert result = @hkp.search('jk@jkraemer.net')
-            assert result.size > 0
-          end
+            should 'find key' do
+              assert result = @hkp.search('jk@jkraemer.net')
+              assert result.size > 0
+            end
 
-          should 'fetch key' do
-            assert result = @hkp.fetch('584C8BEE17CAC560')
-            assert_match 'PGP PUBLIC KEY BLOCK', result
+            should 'fetch key' do
+              assert result = @hkp.fetch('584C8BEE17CAC560')
+              assert_match 'PGP PUBLIC KEY BLOCK', result
+            end
+
           end
 
         end
@@ -86,9 +89,11 @@ class HkpTest < Test::Unit::TestCase
         assert !url.blank?
       end
 
-      should 'find key' do
-        assert result = @hkp.search('jk@jkraemer.net')
-        assert result.size > 0
+      if ENV['ONLINE_TESTS']
+        should 'find key' do
+          assert result = @hkp.search('jk@jkraemer.net')
+          assert result.size > 0
+        end
       end
     end
 
