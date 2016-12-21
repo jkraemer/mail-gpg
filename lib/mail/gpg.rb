@@ -136,7 +136,7 @@ module Mail
       end
       decrypted = DecryptedPart.new(encrypted_mail.parts[1], options)
       Mail.new(decrypted.raw_source) do
-        %w(from to cc bcc subject reply_to in_reply_to).each do |field|
+        %w(from to cc bcc subject reply_to in_reply_to date).each do |field|
           send field, encrypted_mail.send(field)
         end
         # copy header fields
