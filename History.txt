@@ -1,3 +1,11 @@
+== 0.3.0 2016-12-27
+
+* [MIGHT BREAK THINGS] All mail headers will preserved now, if you want to
+  suppress headers you'll have to remove them yourself from now on.
+* Strip "headers" when stripping inline signature (patch by @duckdalbe)
+* support hkps URI scheme
+* bugfix for verifying the "encapsulated" variant of pgp/mime (patch by @duckdalbe)
+
 == 0.2.9 2016-11-15
 
 * add missing require to test case (patch by @ge-fa)
