@@ -15,9 +15,7 @@ module Mail
       def self.setup(cipher_mail, options = {})
         if cipher_mail.multipart?
           self.new do
-            cipher_mail.header.fields.each do |field|
-              header[field.name] = field.value
-            end
+            Mail::Gpg.copy_headers cipher_mail, self
             cipher_mail.parts.each do |part|
               p = VerifiedPart.new do |p|
                 if part.has_content_type? && /application\/(?:octet-stream|pgp-encrypted)/ =~ part.mime_type

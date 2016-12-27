@@ -80,6 +80,7 @@ class MessageTest < Test::Unit::TestCase
           @mail.header['List-Owner'] = 'test-owner@lists.example.org'
           @mail.header['List-Post'] = '<mailto:test@lists.example.org> (Subscribers only)'
           @mail.header['List-Unsubscribe'] = 'bar'
+          @mail.header['Date'] = 'Sun, 25 Dec 2016 16:56:52 -0500'
           @mail.header['OpenPGP'] = 'id=0x0123456789abcdef0123456789abcdefdeadbeef (present on keyservers); (Only encrypted and signed emails are accepted)'
           @mail.deliver
         end
@@ -91,6 +92,7 @@ class MessageTest < Test::Unit::TestCase
           assert_equal 'test-owner@lists.example.org', @mails.first.header['List-Owner'].value
           assert_equal '<mailto:test@lists.example.org> (Subscribers only)', @mails.first.header['List-Post'].value
           assert_equal 'bar', @mails.first.header['List-Unsubscribe'].value
+          assert_equal 'Sun, 25 Dec 2016 16:56:52 -0500', @mails.first.header['Date'].value
           assert_equal 'id=0x0123456789abcdef0123456789abcdefdeadbeef (present on keyservers); (Only encrypted and signed emails are accepted)', @mails.first.header['OpenPGP'].value
         end
 

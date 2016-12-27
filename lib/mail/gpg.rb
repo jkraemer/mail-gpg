@@ -100,26 +100,15 @@ module Mail
       false
     end
 
-    STANDARD_HEADERS = %w(from to cc bcc reply_to subject in_reply_to return_path message_id)
-    MORE_HEADERS = %w(Auto-Submitted OpenPGP References)
-
     private
 
     def self.construct_mail(cleartext_mail, options, &block)
       Mail.new do
         self.perform_deliveries = cleartext_mail.perform_deliveries
-        STANDARD_HEADERS.each do |field|
-          if h = cleartext_mail.header[field]
-            self.header[field] = h.value
-          end
-        end
+        Mail::Gpg.copy_headers cleartext_mail, self
+        # necessary?
         if cleartext_mail.message_id
           header['Message-ID'] = cleartext_mail['Message-ID'].value
-        end
-        cleartext_mail.header.fields.each do |field|
-          if MORE_HEADERS.include?(field.name) or field.name =~ /^(List|X)-/
-            header[field.name] = field.value
-          end
         end
         instance_eval &block
       end
@@ -136,15 +125,9 @@ module Mail
       end
       decrypted = DecryptedPart.new(encrypted_mail.parts[1], options)
       Mail.new(decrypted.raw_source) do
-        %w(from to cc bcc subject reply_to in_reply_to).each do |field|
-          send field, encrypted_mail.send(field)
-        end
-        # copy header fields
-        # headers from the encrypted part (which are already set by Mail.new
-        # above) will be preserved.
-        encrypted_mail.header.fields.each do |field|
-          header[field.name] = field.value if field.name =~ /^X-/ && header[field.name].nil?
-        end
+        # headers from the encrypted part (set by the initializer above) take
+        # precedence over those from the outer mail.
+        Mail::Gpg.copy_headers encrypted_mail, self, overwrite: false
         verify_result decrypted.verify_result if options[:verify]
       end
     end
@@ -194,6 +177,15 @@ module Mail
         signed_mail.verify_result = verify_result
       end
       return result
+    end
+
+    # copies all header fields from mail in first argument to that given last
+    def self.copy_headers(from, to, overwrite: true)
+      from.header.fields.each do |field|
+        if overwrite || to.header[field.name].nil?
+          to.header[field.name] = field.value
+        end
+      end
     end
 
 
