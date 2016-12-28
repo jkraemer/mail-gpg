@@ -116,12 +116,11 @@ module Mail
 
     # decrypts PGP/MIME (RFC 3156, section 4) encrypted mail
     def self.decrypt_pgp_mime(encrypted_mail, options)
-      # MUST containt exactly two body parts
-      if encrypted_mail.parts.length != 2
-        raise EncodingError, "RFC 3136 mandates exactly two body parts, found '#{encrypted_mail.parts.length}'"
+      if encrypted_mail.parts.length < 2
+        raise EncodingError, "RFC 3156 mandates exactly two body parts, found '#{encrypted_mail.parts.length}'"
       end
       if !VersionPart.isVersionPart? encrypted_mail.parts[0]
-        raise EncodingError, "RFC 3136 first part not a valid version part '#{encrypted_mail.parts[0]}'"
+        raise EncodingError, "RFC 3156 first part not a valid version part '#{encrypted_mail.parts[0]}'"
       end
       decrypted = DecryptedPart.new(encrypted_mail.parts[1], options)
       Mail.new(decrypted.raw_source) do
@@ -151,7 +150,7 @@ module Mail
     def self.signature_valid_pgp_mime?(signed_mail, options)
       # MUST contain exactly two body parts
       if signed_mail.parts.length != 2
-        raise EncodingError, "RFC 3136 mandates exactly two body parts, found '#{signed_mail.parts.length}'"
+        raise EncodingError, "RFC 3156 mandates exactly two body parts, found '#{signed_mail.parts.length}'"
       end
       result, verify_result = SignPart.verify_signature(signed_mail.parts[0], signed_mail.parts[1], options)
       signed_mail.verify_result = verify_result
