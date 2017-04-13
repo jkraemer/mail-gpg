@@ -17,7 +17,7 @@ module Mail
       # checks validity of signatures (true / false)
       def signature_valid?
         sigs = self.signatures
-        sigs.any? && sigs.detect{|s|!s.valid?}.blank?
+        sigs.any? && sigs.all?{|s|s.valid?}
       end
 
       # list of all signatures from verify_result
