@@ -1,3 +1,8 @@
+== 0.3.1 2017-04-13
+
+* fixes a bug with signature verification that only surfaced in environments
+  where ActiveSupport isn't loaded. Thanks @mashedcode for pointing this out.
+
 == 0.3.0 2016-12-27
 
 * [MIGHT BREAK THINGS] All mail headers will preserved now, if you want to
