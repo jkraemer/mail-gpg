@@ -25,7 +25,7 @@ module Mail
         end
 
         # Work around the problem that plain_part.raw_source prefixes an
-        # erronous CRLF, <https://github.com/mikel/mail/issues/702>.
+        # erroneous CRLF, <https://github.com/mikel/mail/issues/702>.
         if ! plain_part.raw_source.empty?
           plaintext = [ plain_part.header.raw_source,
                         "\r\n\r\n",
