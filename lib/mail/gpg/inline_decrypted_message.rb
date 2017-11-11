@@ -16,6 +16,28 @@ module Mail
         if cipher_mail.multipart?
           self.new do
             Mail::Gpg.copy_headers cipher_mail, self
+
+            # Drop the HTML-part of a multipart/alternative-message if it is
+            # inline-encrypted: that ciphertext is probably wrapped in HTML,
+            # which GnuPG chokes upon, so we would have to parse the HTML to
+            # handle the message-part properly.
+            # Also it's not clear how to handle the resulting plain-text: is
+            # it HTML or simple text?  That depends on the sending MUA and
+            # the original input.
+            # In summary, that's too much complications.
+            if cipher_mail.mime_type == 'multipart/alternative' &&
+                cipher_mail.html_part.present? &&
+                cipher_mail.html_part.body.decoded.include?('-----BEGIN PGP MESSAGE-----')
+              cipher_mail.parts.delete_if do |part|
+                part[:content_type].content_type == 'text/html'
+              end
+              # Set the content-type of the newly generated message to
+              # something less confusing.
+              content_type 'multipart/mixed'
+              # Leave a marker for other code.
+              header['X-MailGpg-Deleted-Html-Part'] = 'true'
+            end
+
             cipher_mail.parts.each do |part|
               p = VerifiedPart.new do |p|
                 if part.has_content_type? && /application\/(?:octet-stream|pgp-encrypted)/ =~ part.mime_type
