@@ -101,6 +101,7 @@ Set the `:verify` option to `true` when calling `decrypt` to decrypt *and* verif
 A `GPGME::Error::BadPassphrase` will be raised if the password for the private key is incorrect.
 A `EncodingError` will be raised if the encrypted mails is not encoded correctly as a [RFC 3156](http://www.ietf.org/rfc/rfc3156.txt) message.
 
+Please note that in case of a multipart/alternative-message where both parts are inline-encrypted, the HTML-part will be dropped during decryption. Handling the HTML-part would require parsing HTML and guessing about the decrypted contents, which is brittle and out of the scope of this library. If you need the HTML-part of multipart/alternative-messages, use pgp/mime-encryption.
 
 ### Signing only
 

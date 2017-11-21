@@ -33,6 +33,25 @@ class InlineDecryptedMessageTest < Test::Unit::TestCase
       end
     end
 
+    context "multipart/alternative message" do
+      should "have dropped HTML-part" do
+        mail = Mail.new(@mail)
+        mail.body = InlineDecryptedMessageTest.encrypt(mail, mail.body.to_s)
+        mail.html_part do |p|
+          p.body "<pre>#{InlineDecryptedMessageTest.encrypt(mail, mail.body.to_s)}</pre>"
+        end
+
+        assert mail.multipart?
+        assert mail.encrypted?
+        assert decrypted = mail.decrypt(:password => 'abc', verify: true)
+        assert !decrypted.encrypted?
+        assert decrypted.mime_type == 'multipart/mixed'
+        assert decrypted.parts.size == 1
+        assert decrypted.parts.first.mime_type == 'text/plain'
+        assert decrypted.header['X-MailGpg-Deleted-Html-Part'].value == 'true'
+      end
+    end
+
     context "attachment message" do
       should "decrypt attachment" do
         rakefile = File.open('Rakefile') { |file| file.read }
