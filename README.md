@@ -47,7 +47,9 @@ with the gpg method:
 
       # encrypt and sign message using a different key
       gpg encrypt: true, sign_as: 'joe@otherdomain.com', password: 'secret'
-
+      
+      #encrypt message using a specific key. Note that this will override the encryption key for all recipients.
+      gpg encrypt: true, encrypt_with: 'joe@otherdomain.com'
 
       # encrypt and sign message and use a callback function to provide the
       # passphrase.
