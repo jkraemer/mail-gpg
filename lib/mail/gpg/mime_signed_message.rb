@@ -18,13 +18,11 @@ module Mail
           if content_part.multipart?
             content_part.parts.each{|part| add_part part}
           else
-            body content_part.body.to_s
+            body content_part.body.raw_source
           end
         end
       end
     end
   end
 end
-
-
 
