@@ -23,7 +23,7 @@ module Mail
         GPGME::Ctx.new(options) do |ctx|
           begin
             if options[:sign]
-              if options[:signers]
+              if options[:signers] && options[:signers].size > 0
                 signers = GPGME::Key.find(:secret, options[:signers], :sign)
                 ctx.add_signer(*signers)
               end
@@ -122,12 +122,19 @@ module Mail
             k = key_data[r]
             if k and k =~ /-----BEGIN PGP/
               k = GPGME::Key.import(k).imports.map(&:fpr)
+              k = nil if k.size == 0
             end
-            GPGME::Key.find(:public, k || r, :encrypt)
+            key_id = k || r
+            unless key_id.nil? || key_id.empty?
+              GPGME::Key.find(:public, key_id, :encrypt)
+            end
           end.flatten
-        else
+        elsif emails_or_shas_or_keys.size > 0
           # key lookup in keychain for all receivers
           GPGME::Key.find :public, emails_or_shas_or_keys, :encrypt
+        else
+          # empty array given
+          []
         end
       end
     end
