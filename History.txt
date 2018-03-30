@@ -1,3 +1,11 @@
+== 0.3.2 2018-03-30
+
+* do not attempt to decrypt inline-encrypted HTML parts #52
+* fixes possible double decoding of quoted printable bodies #57
+* fixes a bug which occured in some environments that led to encryption with
+  all available public keys (#31, #55)
+
+
 == 0.3.1 2017-04-13
 
 * fixes a bug with signature verification that only surfaced in environments
