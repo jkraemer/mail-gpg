@@ -129,7 +129,7 @@ module Mail
               GPGME::Key.find(:public, key_id, :encrypt)
             end
           end.flatten.compact
-        elsif emails_or_shas_or_keys.size > 0
+        elsif emails_or_shas_or_keys and emails_or_shas_or_keys.size > 0
           # key lookup in keychain for all receivers
           GPGME::Key.find :public, emails_or_shas_or_keys, :encrypt
         else

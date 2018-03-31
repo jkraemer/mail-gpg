@@ -11,7 +11,9 @@ class DecryptedPartTest < Test::Unit::TestCase
         subject 'test'
         body 'i am unencrypted'
       end
-      @part = Mail::Gpg::EncryptedPart.new(@mail, { :sign => true, :password => 'abc' })
+      @part = Mail::Gpg::EncryptedPart.new(@mail, { recipients: ['jane@foo.bar'],
+                                                    :sign => true,
+                                                    :password => 'abc' })
     end
 
     should 'decrypt' do

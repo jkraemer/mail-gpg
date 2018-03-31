@@ -17,67 +17,20 @@ class EncryptedPartTest < Test::Unit::TestCase
         subject 'test'
         body 'i am unencrypted'
       end
-      @part = Mail::Gpg::EncryptedPart.new(mail)
+      @part = Mail::Gpg::EncryptedPart.new(mail, recipients: ['jane@foo.bar'])
     end
 
-    context 'with email address' do
-      setup do
-        @email = 'jane@foo.bar'
-      end
-
-      should 'resolve email to gpg keys' do
-        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, @email)
-        check_key_list keys
-      end
-
-      should 'resolve emails to gpg keys' do
-        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, [@email])
-        check_key_list keys
-      end
-
+    should 'have binary content type and name' do
+      assert_equal 'application/octet-stream; name=encrypted.asc', @part.content_type
     end
 
-    context 'with key id' do
-      setup do
-        @key_id = GPGME::Key.find(:public, 'jane@foo.bar').first.sha
-      end
-
-      should 'resolve single id  gpg keys' do
-        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, @key_id)
-        check_key_list keys
-      end
-      should 'resolve id list to gpg keys' do
-        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, [@key_id])
-        check_key_list keys
-      end
+    should 'have description' do
+      assert_match(/openpgp/i, @part.content_description)
     end
 
-    context 'with key fingerprint' do
-      setup do
-        @key_fpr = GPGME::Key.find(:public, 'jane@foo.bar').first.fingerprint
-      end
-
-      should 'resolve single id  gpg keys' do
-        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, @key_fpr)
-        check_key_list keys
-      end
-      should 'resolve id list to gpg keys' do
-        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, [@key_fpr])
-        check_key_list keys
-      end
+    should 'have inline disposition and default filename' do
+      assert_equal 'inline; filename=encrypted.asc', @part.content_disposition
     end
 
-    context 'with emails and key data' do
-      setup do
-        @key = GPGME::Key.find(:public, 'jane@foo.bar').first.export(armor: true).to_s
-        @emails = ['jane@foo.bar']
-        @key_data = { 'jane@foo.bar' => @key }
-      end
-
-      should 'resolve to gpg keys' do
-        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, @emails, @key_data)
-        check_key_list keys
-      end
-    end
   end
 end
