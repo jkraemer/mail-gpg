@@ -1,3 +1,13 @@
+== 0.4.0 2018-05-19
+
+* [MIGHT BREAK THINGS] changes to the way keys are looked up #55
+  Previously, keys that were not explicitly mentioned but already present in
+  the key chain for one of the recipient addresses would have been used
+  silently. This is no longer the case, if the :keys option is given, all
+  necessary keys have to be specified as either key data, key id, fingerprint
+  or GPGME::Key object.
+* fix error when calling encrypt with actual key objects #60
+
 == 0.3.3 2018-04-01
 
 * fix broken GpgmeHelper#keys_for_data #59
