@@ -84,6 +84,13 @@ In theory you only need to specify the key once like that, however doing it
 every time does not hurt as gpg is clever enough to recognize known keys, only
 updating it's db when necessary.
 
+Note: Mail-Gpg in version 0.4 and up is more strict regarding the keys option:
+if it is present, only key material from there (either given as key data like
+above, or as key id, key fingerprint or `GPGMe::Key` object if they have been
+imported before) will be used. Keys already present in the local keychain for
+any of the recipients that are not explicitly mentioned in the `keys` hash will
+be ignored.
+
 You may also want to have a look at the [GPGME](https://github.com/ueno/ruby-gpgme) docs and code base for more info on the various options, especially regarding the `passphrase_callback` arguments.
 
 

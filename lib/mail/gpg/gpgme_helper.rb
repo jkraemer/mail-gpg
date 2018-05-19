@@ -115,17 +115,31 @@ module Mail
 
       # normalizes the list of recipients' emails, key ids and key data to a
       # list of Key objects
+      #
+      # if key_data is given, _only_ key material from there is used,
+      # and eventually already imported keys in the keychain are ignored.
       def self.keys_for_data(emails_or_shas_or_keys, key_data = nil)
         if key_data
+          # in this case, emails_or_shas_or_keys is supposed to be the list of
+          # recipients, and key_data the key material to be used.
+          # We now map these to whatever we find in key_data for each of these
+          # addresses.
           [emails_or_shas_or_keys].flatten.map do |r|
-            # import any given keys
             k = key_data[r]
-            k = k.fingerprint if k.is_a? GPGME::Key # assuming this is already imported
-            if k and k =~ /-----BEGIN PGP/
-              k = GPGME::Key.import(k).imports.map(&:fpr)
-              k = nil if k.size == 0
-            end
-            key_id = k || r
+            key_id = case k
+                     when GPGME::Key
+                       # assuming this is already imported
+                       k.fingerprint
+                     when nil, ''
+                       # nothing
+                       nil
+                     when /-----BEGIN PGP/
+                       # ASCII key data
+                       GPGME::Key.import(k).imports.map(&:fpr)
+                     else
+                       # key id or fingerprint
+                       k
+                     end
             unless key_id.nil? || key_id.empty?
               GPGME::Key.find(:public, key_id, :encrypt)
             end

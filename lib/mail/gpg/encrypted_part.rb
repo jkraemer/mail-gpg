@@ -11,7 +11,10 @@ module Mail
       # :recipients : array of receiver addresses
       # :keys : A hash mapping recipient email addresses to public keys or public
       # key ids. Imports any keys given here that are not already part of the
-      # local keychain before sending the mail.
+      # local keychain before sending the mail. If this option is given, strictly
+      # only the key material from this hash is used, ignoring any keys for
+      # recipients that might have been added to the local key chain but are
+      # not mentioned here.
       # :always_trust : send encrypted mail to untrusted receivers, true by default
       # :filename : define a custom name for the encrypted file attachment
       def initialize(cleartext_mail, options = {})
