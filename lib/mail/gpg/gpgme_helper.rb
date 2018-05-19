@@ -120,6 +120,7 @@ module Mail
           [emails_or_shas_or_keys].flatten.map do |r|
             # import any given keys
             k = key_data[r]
+            k = k.fingerprint if k.is_a? GPGME::Key # assuming this is already imported
             if k and k =~ /-----BEGIN PGP/
               k = GPGME::Key.import(k).imports.map(&:fpr)
               k = nil if k.size == 0

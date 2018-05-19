@@ -74,6 +74,19 @@ class GpgmeHelperTest < Test::Unit::TestCase
         check_key_list keys
       end
     end
+
+    context 'with key' do
+      setup do
+        @key = GPGME::Key.find(:public, 'jane@foo.bar').first
+        @emails = ['jane@foo.bar']
+        @key_data = { 'jane@foo.bar' => @key }
+      end
+
+      should 'resolve to gpg keys' do
+        assert keys = Mail::Gpg::GpgmeHelper.send(:keys_for_data, @emails, @key_data)
+        check_key_list keys
+      end
+    end
   end
 end
 
