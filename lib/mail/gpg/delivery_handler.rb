@@ -7,7 +7,7 @@ module Mail
           encrypted_mail = nil
           begin
             options = TrueClass === mail.gpg ? { encrypt: true } : mail.gpg
-            if options.delete(:encrypt)
+            if options[:encrypt]
               encrypted_mail = Mail::Gpg.encrypt(mail, options)
             elsif options[:sign] || options[:sign_as]
               encrypted_mail = Mail::Gpg.sign(mail, options)
