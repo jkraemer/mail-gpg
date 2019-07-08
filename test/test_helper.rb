@@ -28,13 +28,7 @@ class GPGTestUtils
   def initialize(gpg_bin = nil)
     @home = File.join File.dirname(__FILE__), 'gpghome'
     @gpg_bin = gpg_bin
-  end
 
-  def preset_passphrases?
-    !!@preset_passphrases
-  end
-
-  def setup
     ENV['GPG_AGENT_INFO'] = '' # disable gpg agent
     ENV['GNUPGHOME'] = @home
 
@@ -52,7 +46,13 @@ class GPGTestUtils
     else
       @preset_passphrases = false
     end
+  end
 
+  def preset_passphrases?
+    !!@preset_passphrases
+  end
+
+  def setup
     gen_keys unless File.directory? @home
 
     if @preset_passphrases
@@ -131,7 +131,6 @@ END
 end
 
 gpg_utils = GPGTestUtils.new(ENV['GPG_BIN'])
-gpg_utils.setup
 v = Gem::Version.new(gpg_utils.gpg_engine.version)
 if v >= Gem::Version.new("2.1.0")
   puts "Running with GPG >= 2.1"
@@ -140,4 +139,5 @@ elsif v >= Gem::Version.new("2.0.0")
 else
   puts "Running with GPG < 2.0"
 end
+gpg_utils.setup
 
