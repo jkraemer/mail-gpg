@@ -9,9 +9,10 @@ env:
 matrix:
   exclude:
 before_install:
-  - gem update bundler
-sudo: false
+  - sudo apt install -y gnupg gnupg2
 cache: bundler
+dist: xenial
 addons:
   apt:
     update: true
+
