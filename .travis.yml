@@ -4,11 +4,14 @@ rvm:
   - 2.5.5
   - 2.4.6
 env:
-  - RAILS=4.2.11.1
-  - RAILS=5.2.3
+  - RAILS=4.2.11.1 GPG_BIN=/usr/bin/gpg1
+  - RAILS=4.2.11.1 GPG_BIN=/usr/bin/gpg
+  - RAILS=5.2.3 GPG_BIN=/usr/bin/gpg1
+  - RAILS=5.2.3 GPG_BIN=/usr/bin/gpg
 matrix:
   exclude:
 before_install:
+  - gem install bundler -v "~> 2.0"
   - sudo apt install -y gnupg gnupg2
 cache: bundler
 dist: xenial
