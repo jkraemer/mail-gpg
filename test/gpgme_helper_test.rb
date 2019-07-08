@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class GpgmeHelperTest < Test::Unit::TestCase
+class GpgmeHelperTest < MailGpgTestCase
 
   def check_key_list(keys)
     assert_equal 1, keys.size

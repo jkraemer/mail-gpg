@@ -1,7 +1,7 @@
 require 'test_helper'
 require 'mail/gpg/sign_part'
 
-class SignPartTest < Test::Unit::TestCase
+class SignPartTest < MailGpgTestCase
   context 'SignPart' do
     setup do
       set_passphrase('abc')

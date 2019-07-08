@@ -1,7 +1,7 @@
 require 'test_helper'
 require 'mail/gpg/encrypted_part'
 
-class EncryptedPartTest < Test::Unit::TestCase
+class EncryptedPartTest < MailGpgTestCase
 
   def check_key_list(keys)
     assert_equal 1, keys.size

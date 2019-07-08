@@ -2,7 +2,7 @@ require 'test_helper'
 require 'byebug'
 require 'hkp'
 
-class HkpTest < Test::Unit::TestCase
+class HkpTest < MailGpgTestCase
 
   context "hpk client" do
     {

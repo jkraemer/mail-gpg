@@ -2,7 +2,7 @@ require 'test_helper'
 require 'mail/gpg/decrypted_part'
 require 'mail/gpg/encrypted_part'
 
-class DecryptedPartTest < Test::Unit::TestCase
+class DecryptedPartTest < MailGpgTestCase
   context 'DecryptedPart' do
     setup do
       @mail = Mail.new do

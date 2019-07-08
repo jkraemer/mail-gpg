@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class MessageTest < Test::Unit::TestCase
+class MessageTest < MailGpgTestCase
 
   context "Mail::Message" do
 
@@ -213,7 +213,7 @@ class MessageTest < Test::Unit::TestCase
           assert m = @mails.first
           assert_equal 'test', m.subject
           # incorrect passphrase
-          if GPG21 == true
+          if @gpg_utils.preset_passphrases?
             set_passphrase('incorrect')
             expected_exception = GPGME::Error::DecryptFailed
           else

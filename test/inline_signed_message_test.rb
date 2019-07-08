@@ -1,7 +1,7 @@
 require 'test_helper'
 
 # test cases for PGP inline signed messages (i.e. non-mime)
-class InlineSignedMessageTest < Test::Unit::TestCase
+class InlineSignedMessageTest < MailGpgTestCase
 
   context "InlineSignedMessage" do
 

@@ -31,7 +31,7 @@ class MyMailer < ActionMailer::Base
 
 end
 
-class ActionMailerTest < Test::Unit::TestCase
+class ActionMailerTest < MailGpgTestCase
   context 'without return_path' do
     setup do
       set_passphrase('abc')

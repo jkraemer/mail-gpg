@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class GpgTest < Test::Unit::TestCase
+class GpgTest < MailGpgTestCase
 
   def check_headers(mail = @mail, encrypted = @encrypted)
     assert_equal mail.to, encrypted.to
