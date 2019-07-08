@@ -35,29 +35,39 @@ class GPGTestUtils
   end
 
   def setup
+    ENV['GPG_AGENT_INFO'] = '' # disable gpg agent
     ENV['GNUPGHOME'] = @home
 
     if @gpg_bin
       GPGME::Engine.set_info(GPGME::PROTOCOL_OpenPGP, @gpg_bin, @home)
+    else
+      GPGME::Engine.home_dir = @home
     end
 
     @gpg_engine = GPGME::Engine.info.find {|e| e.protocol == GPGME::PROTOCOL_OpenPGP }
-    @gpg_bin = @gpg_engine.file_name
-    @preset_passphrases = false
+    @gpg_bin ||= @gpg_engine.file_name
 
     if Gem::Version.new(@gpg_engine.version) >= Gem::Version.new("2.1.0")
       @preset_passphrases = true
+    else
+      @preset_passphrases = false
+    end
+
+    gen_keys unless File.directory? @home
+
+    if @preset_passphrases
       libexecdir = `gpgconf --list-dir`.lines.grep(/^libexecdir:/).first.split(':').last.strip
       @gpp_bin = File.join(libexecdir, 'gpg-preset-passphrase')
       @keygrip_jane = get_keygrip('jane@foo.bar')
       @keygrip_joe = get_keygrip('joe@foo.bar')
     end
 
-    gen_keys unless File.directory? @home
   end
 
   def gen_keys
-    FileUtils.mkdir_p gpghome
+    puts "setting up keydir #{@home}"
+    FileUtils.mkdir_p @home
+    (File.open(File.join(@home, "gpg-agent.conf"), "wb") << "allow-preset-passphrase\nbatch\n").close
     GPGME::Ctx.new do |gpg|
       gpg.generate_key <<-END
 <GnupgKeyParms format="internal">

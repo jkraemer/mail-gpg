@@ -3,20 +3,7 @@ require 'rake/testtask'
 require 'gpgme'
 require 'byebug'
 
-def setup_gpg
-  # TODO do we need this?
-  ENV['GPG_AGENT_INFO'] = '' # disable gpg agent
-end
-
-task :default => ["mail_gpg:tests:setup", :test]
-
-namespace :mail_gpg do
-  namespace :tests do
-    task :setup do
-      setup_gpg
-    end
-  end
-end
+task :default => [:test]
 
 Rake::TestTask.new(:test) do |test|
   test.libs << 'test'

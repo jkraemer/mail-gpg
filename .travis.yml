@@ -4,13 +4,12 @@ rvm:
   - 2.5.5
   - 2.4.6
 env:
-  - RAILS=4.2.11.1 GPG_BIN=/usr/bin/gpg1
-  - RAILS=5.2.3 GPG_BIN=/usr/bin/gpg1
+  - RAILS=4.2.11.1
+  - RAILS=5.2.3
 matrix:
   exclude:
 before_install:
   - gem update bundler
-  - sudo apt-get install -y gpg1
 sudo: false
 cache: bundler
 addons:
