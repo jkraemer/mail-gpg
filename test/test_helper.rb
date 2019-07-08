@@ -110,7 +110,12 @@ END
   private
 
   def get_keygrip(uid)
-    output = `#{@gpg_bin} --list-secret-keys --with-colons #{uid} 2>&1`
+    cmd = "#{@gpg_bin} --list-secret-keys --with-colons #{uid} 2>&1"
+    output = `#{cmd}`
+    if output =~ /starting migration from earlier GnuPG versions/
+      output = `#{cmd}`
+    end
+
     if line = output.lines.grep(/^grp/).first
       line.split(':')[9]
     else
