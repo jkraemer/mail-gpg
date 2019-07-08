@@ -110,7 +110,13 @@ END
   private
 
   def get_keygrip(uid)
-    `#{@gpg_bin} --list-secret-keys --with-colons #{uid} 2>&1`.lines.grep(/^grp/).first.split(':')[9]
+    output = `#{@gpg_bin} --list-secret-keys --with-colons #{uid} 2>&1`
+    if line = output.lines.grep(/^grp/).first
+      line.split(':')[9]
+    else
+      puts "malformed key list output:\n#{output}"
+      raise
+    end
   end
 
   def ensure_gpg_agent
