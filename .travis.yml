@@ -4,9 +4,9 @@ rvm:
   - 2.5.5
   - 2.4.6
 env:
-  - RAILS=4.2.11.1 GPG_BIN=/usr/bin/gpg1
+  - RAILS=4.2.11.1 GPG_BIN=/usr/bin/gpg2
   - RAILS=4.2.11.1 GPG_BIN=/usr/bin/gpg
-  - RAILS=5.2.3 GPG_BIN=/usr/bin/gpg1
+  - RAILS=5.2.3 GPG_BIN=/usr/bin/gpg2
   - RAILS=5.2.3 GPG_BIN=/usr/bin/gpg
 matrix:
   exclude:
