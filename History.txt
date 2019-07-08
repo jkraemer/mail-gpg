@@ -1,3 +1,10 @@
+== 0.4.1 2019-07-08
+
+* do not modify argument hash #61
+* fix tests on travis and run them with both gpg < 2.0 and >= 2.1
+* gpg 2.0.x apparently has no way of preseeding passphrases and thus will only
+  ever work with passphraseless keys.
+
 == 0.4.0 2018-05-19
 
 * [MIGHT BREAK THINGS] changes to the way keys are looked up #55

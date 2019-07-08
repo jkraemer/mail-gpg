@@ -1,5 +1,5 @@
 module Mail
   module Gpg
-    VERSION = "0.4.0"
+    VERSION = "0.4.1"
   end
 end
