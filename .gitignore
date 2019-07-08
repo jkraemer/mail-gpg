@@ -16,7 +16,7 @@ rdoc
 spec/reports
 test/tmp
 test/version_tmp
-test/gpghome/random_seed
+test/gpghome
 tmp
 *.swp
 tags
