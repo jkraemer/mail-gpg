@@ -17,10 +17,13 @@ require 'mail/gpg/inline_signed_message'
 
 module Mail
   module Gpg
+    BEGIN_PGP_MESSAGE_MARKER = /^-----BEGIN PGP MESSAGE-----/
+    BEGIN_PGP_SIGNED_MESSAGE_MARKER = /^-----BEGIN PGP SIGNED MESSAGE-----/
+
     # options are:
     # :sign: sign message using the sender's private key
     # :sign_as: sign using this key (give the corresponding email address or key fingerprint)
-    # :passphrase: passphrase for the signing key
+    # :password: passphrase for the signing key
     # :keys: A hash mapping recipient email addresses to public keys or public
     # key ids. Imports any keys given here that are not already part of the
     # local keychain before sending the mail.
@@ -198,10 +201,10 @@ module Mail
     # check if inline PGP (i.e. if any parts of the mail includes
     # the PGP MESSAGE marker)
     def self.encrypted_inline?(mail)
-      return true if mail.body.include?('-----BEGIN PGP MESSAGE-----')
+      return true if mail.body.to_s =~ BEGIN_PGP_MESSAGE_MARKER rescue nil
       if mail.multipart?
         mail.parts.each do |part|
-          return true if part.body.include?('-----BEGIN PGP MESSAGE-----')
+          return true if part.body.to_s =~ BEGIN_PGP_MESSAGE_MARKER rescue nil
           return true if part.has_content_type? &&
             /application\/(?:octet-stream|pgp-encrypted)/ =~ part.mime_type &&
             /.*\.(?:pgp|gpg|asc)$/ =~ part.content_type_parameters[:name] &&
@@ -223,10 +226,10 @@ module Mail
     # check if inline PGP (i.e. if any parts of the mail includes
     # the PGP SIGNED marker)
     def self.signed_inline?(mail)
-      return true if mail.body.to_s =~ /^-----BEGIN PGP SIGNED MESSAGE-----/
+      return true if mail.body.to_s =~ BEGIN_PGP_SIGNED_MESSAGE_MARKER rescue nil
       if mail.multipart?
         mail.parts.each do |part|
-          return true if part.body.to_s =~ /^-----BEGIN PGP SIGNED MESSAGE-----/
+          return true if part.body.to_s =~ BEGIN_PGP_SIGNED_MESSAGE_MARKER rescue nil
         end
       end
       false
