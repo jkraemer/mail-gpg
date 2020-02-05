@@ -8,7 +8,7 @@ module Mail
 
       def self.build(cleartext_mail)
         new do
-          if cleartext_mail.body.multipart?
+          if cleartext_mail.multipart?
             if cleartext_mail.content_type =~ /^(multipart[^;]+)/
               # preserve multipart/alternative etc
               content_type $1
