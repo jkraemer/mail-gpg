@@ -38,6 +38,45 @@ class MessageTest < MailGpgTestCase
       end
     end
 
+    context "with multi line utf-8 body and gpg signing only" do
+      setup do
+        @mail.charset = 'UTF-8'
+        @body = <<-END
+        one
+        two
+        euro €
+        three
+        END
+
+        @mail.body = @body
+        @mail.gpg sign: true, password: 'abc'
+        @mail.deliver
+        @signed = Mail.new @mails.first.to_s
+        @verified = @signed.verify
+        # Mail gem from 2.7.1 onwards converts "\n" to "\r\n"
+        @body = Mail::Utilities.to_crlf(@body)
+      end
+
+      should 'keep body unchanged' do
+        body = @verified.body.to_s.force_encoding 'UTF-8'
+        assert_equal @body, body
+      end
+
+      should 'verify signed mail' do
+        refute @signed.encrypted?
+        assert @signed.multipart?, "message should be multipart"
+        assert @signed.signed?, "message should be signed"
+        assert sign_part = @signed.parts.last
+        GPGME::Crypto.new.verify(sign_part.body.to_s, signed_text: @signed.parts.first.encoded) do |sig|
+          assert sig.valid?, "Signature is not valid"
+        end
+
+        assert @verified.signature_valid?, "Signature check failed!"
+        refute @verified.multipart?
+      end
+
+    end
+
     context "with gpg signing only" do
       setup do
         @mail.gpg sign: true, password: 'abc'
@@ -46,16 +85,17 @@ class MessageTest < MailGpgTestCase
       context 'with multiple parts' do
         setup do
           p = Mail::Part.new do
-            body 'and another part'
+            body "and\nanother part euro €"
           end
           @mail.add_part p
           p = Mail::Part.new do
-            body 'and a third part'
+            content_type "text/html; charset=UTF-8"
+            body "and an\nHTML part €"
           end
           @mail.add_part p
 
           @mail.deliver
-          @signed = @mails.first
+          @signed = Mail.new @mails.first.to_s
           @verified = @signed.verify
         end
 
@@ -67,8 +107,8 @@ class MessageTest < MailGpgTestCase
           assert_equal 3, @mail.parts.size
           assert_equal 3, @verified.parts.size
           assert_equal 'i am unencrypted', @verified.parts[0].body.to_s
-          assert_equal 'and another part', @verified.parts[1].body.to_s
-          assert_equal 'and a third part', @verified.parts[2].body.to_s
+          assert_equal "and\r\nanother part euro €", @verified.parts[1].body.to_s.force_encoding('UTF-8')
+          assert_equal "and an\r\nHTML part €", @verified.parts[2].body.to_s.force_encoding('UTF-8')
         end
       end
 
@@ -133,24 +173,41 @@ class MessageTest < MailGpgTestCase
       end
     end
 
-    context 'with encryption and signing' do
+    context 'utf-8 with encryption and signing' do
       setup do
+        @body = "one\neuro €"
+        @mail.charset = 'UTF-8'
+        @mail.body @body
         @mail.gpg encrypt: true, sign: true, password: 'abc'
         @mail.deliver
+        assert_equal 1, @mails.size
+        assert m = @mails.first
+        @received = Mail.new m.to_s
       end
 
       should 'decrypt and check signature' do
-        assert_equal 1, @mails.size
-        assert m = @mails.first
+        m = @received
         assert_equal 'test', m.subject
         assert m.multipart?
         assert m.encrypted?
         assert decrypted = m.decrypt(:password => 'abc', verify: true)
         assert_equal 'test', decrypted.subject
         assert decrypted == @mail
-        assert_equal 'i am unencrypted', decrypted.body.to_s
+        assert_equal "one\r\neuro €", decrypted.body.to_s.force_encoding('UTF-8')
         assert decrypted.signature_valid?
         assert_equal 1, decrypted.signatures.size
+      end
+
+      should 'preserve headers in raw_source output' do
+        m = @received
+        assert decrypted = m.decrypt(:password => 'abc', verify: true)
+        assert s = decrypted.raw_source
+        assert s.include?('From: joe@foo.bar')
+        assert s.include?('To: jane@foo.bar')
+        assert s.include?('Subject: test')
+
+        body = decrypted.body.to_s.force_encoding('UTF-8')
+        assert body.include?('euro €'), s
       end
     end
 

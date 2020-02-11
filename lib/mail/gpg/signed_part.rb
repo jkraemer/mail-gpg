@@ -16,7 +16,7 @@ module Mail
               content_type 'multipart/mixed'
             end
             cleartext_mail.body.parts.each do |p|
-              add_part p
+              add_part Mail::Gpg::SignedPart.build(p)
             end
           else
             content_type cleartext_mail.content_type

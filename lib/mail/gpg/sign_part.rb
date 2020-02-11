@@ -24,19 +24,8 @@ module Mail
           return false
         end
 
-        # Work around the problem that plain_part.raw_source prefixes an
-        # erroneous CRLF, <https://github.com/mikel/mail/issues/702>.
-        if ! plain_part.raw_source.empty?
-          plaintext = [ plain_part.header.raw_source,
-                        "\r\n\r\n",
-                        plain_part.body.raw_source
-                      ].join
-        else
-          plaintext = plain_part.encoded
-        end
-
         signature = signature_part.body.encoded
-        GpgmeHelper.sign_verify(plaintext, signature, options)
+        GpgmeHelper.sign_verify(plain_part.encoded, signature, options)
       end
     end
   end
