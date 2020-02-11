@@ -20,7 +20,7 @@ module Mail
             end
           else
             content_type cleartext_mail.content_type
-            body cleartext_mail.body.raw_source
+            body Mail::Utilities.to_crlf(cleartext_mail.body.raw_source)
           end
         end
       end
