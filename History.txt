@@ -1,3 +1,8 @@
+== 0.4.3 2020-02-12
+
+* fix bad signatures of some mails with Mail 2.7.1 by always enforcing
+  base64 encoding for signed content
+
 == 0.4.2 2019-09-02
 
 * do not die on invalid content-transfer encodings when checking if a message
