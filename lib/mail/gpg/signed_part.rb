@@ -20,7 +20,14 @@ module Mail
             end
           else
             content_type cleartext_mail.content_type
-            body Mail::Utilities.to_crlf(cleartext_mail.body.raw_source)
+            if disposition = cleartext_mail.content_disposition
+              content_disposition disposition
+            end
+
+            # brute force approach to avoid messed up line endings that break
+            # signatures with Mail 2.7
+            body Mail::Encodings::Base64.encode cleartext_mail.body.to_s
+            body.encoding = 'base64'
           end
         end
       end

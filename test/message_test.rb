@@ -82,6 +82,38 @@ class MessageTest < MailGpgTestCase
         @mail.gpg sign: true, password: 'abc'
       end
 
+      context 'with attachment' do
+        setup do
+          p = Mail::Part.new do
+            body "and\nanother part euro €"
+          end
+          @mail.add_part p
+          # if we do not force it to binary, the line ending is changed to CRLF. WTF?
+          @attachment_data = "this is\n € not an image".force_encoding(Encoding::BINARY)
+          @mail.attachments['test.jpg'] = { mime_type: 'image/jpeg',
+                                            content: @attachment_data }
+
+          @mail.deliver
+          @signed = Mail.new @mails.first.to_s
+          @verified = @signed.verify
+        end
+
+        should 'verify signature' do
+          assert @verified.signature_valid?
+        end
+
+        should 'have original three parts' do
+          assert_equal 3, @verified.parts.size
+          assert_equal 'i am unencrypted', @verified.parts[0].body.to_s
+          assert_equal "and\r\nanother part euro €", @verified.parts[1].body.to_s.force_encoding('UTF-8')
+          assert attachment = @verified.parts[2]
+          assert attachment.attachment?
+          assert_equal "attachment; filename=test.jpg", attachment.content_disposition
+          assert_equal @attachment_data, attachment.body.to_s
+        end
+
+      end
+
       context 'with multiple parts' do
         setup do
           p = Mail::Part.new do
