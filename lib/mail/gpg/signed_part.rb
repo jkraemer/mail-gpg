@@ -23,6 +23,9 @@ module Mail
             if disposition = cleartext_mail.content_disposition
               content_disposition disposition
             end
+            if id = cleartext_mail.header['Content-ID']
+              content_id id
+            end
 
             # brute force approach to avoid messed up line endings that break
             # signatures with Mail 2.7

@@ -92,6 +92,7 @@ class MessageTest < MailGpgTestCase
           @attachment_data = "this is\n € not an image".force_encoding(Encoding::BINARY)
           @mail.attachments['test.jpg'] = { mime_type: 'image/jpeg',
                                             content: @attachment_data }
+          @mail.attachments['test.jpg'].header['Content-ID'] = '<image002.jpg@01D665C1.3F756500>'
 
           @mail.deliver
           @signed = Mail.new @mails.first.to_s
@@ -110,6 +111,7 @@ class MessageTest < MailGpgTestCase
           assert attachment.attachment?
           assert_equal "attachment; filename=test.jpg", attachment.content_disposition
           assert_equal @attachment_data, attachment.body.to_s
+          assert_equal '<image002.jpg@01D665C1.3F756500>', attachment.header['Content-ID'].to_s
         end
 
       end
