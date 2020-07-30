@@ -1,3 +1,8 @@
+== 0.4.4 2020-07-30
+
+* preserve Content-ID header of signed parts (relevant for inline images in
+  HTML mails)
+
 == 0.4.3 2020-02-12
 
 * fix bad signatures of some mails with Mail 2.7.1 by always enforcing
