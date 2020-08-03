@@ -19,7 +19,8 @@ module Mail
       # :filename : define a custom name for the encrypted file attachment
       def initialize(cleartext_mail, options = {})
         options = { always_trust: true }.merge options
-
+        body_only = options[:body_only]
+        body_only ? cleartext_mail = cleartext_mail.body : cleartext_mail
         encrypted = GpgmeHelper.encrypt(cleartext_mail.encoded, options)
         super() do
           body encrypted.to_s
