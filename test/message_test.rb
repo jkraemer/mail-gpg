@@ -53,8 +53,6 @@ class MessageTest < MailGpgTestCase
         @mail.deliver
         @signed = Mail.new @mails.first.to_s
         @verified = @signed.verify
-        # Mail gem from 2.7.1 onwards converts "\n" to "\r\n"
-        @body = Mail::Utilities.to_crlf(@body)
       end
 
       should 'keep body unchanged' do
@@ -88,7 +86,7 @@ class MessageTest < MailGpgTestCase
             body "and\nanother part euro €"
           end
           @mail.add_part p
-          # if we do not force it to binary, the line ending is changed to CRLF. WTF?
+          # attachment bodies are returned as binary
           @attachment_data = "this is\n € not an image".force_encoding(Encoding::BINARY)
           @mail.attachments['test.jpg'] = { mime_type: 'image/jpeg',
                                             content: @attachment_data }
@@ -106,7 +104,7 @@ class MessageTest < MailGpgTestCase
         should 'have original three parts' do
           assert_equal 3, @verified.parts.size
           assert_equal 'i am unencrypted', @verified.parts[0].body.to_s
-          assert_equal "and\r\nanother part euro €", @verified.parts[1].body.to_s.force_encoding('UTF-8')
+          assert_equal "and\nanother part euro €", @verified.parts[1].body.to_s.force_encoding('UTF-8')
           assert attachment = @verified.parts[2]
           assert attachment.attachment?
           assert_equal "attachment; filename=test.jpg", attachment.content_disposition
@@ -141,8 +139,8 @@ class MessageTest < MailGpgTestCase
           assert_equal 3, @mail.parts.size
           assert_equal 3, @verified.parts.size
           assert_equal 'i am unencrypted', @verified.parts[0].body.to_s
-          assert_equal "and\r\nanother part euro €", @verified.parts[1].body.to_s.force_encoding('UTF-8')
-          assert_equal "and an\r\nHTML part €", @verified.parts[2].body.to_s.force_encoding('UTF-8')
+          assert_equal "and\nanother part euro €", @verified.parts[1].body.to_s.force_encoding('UTF-8')
+          assert_equal "and an\nHTML part €", @verified.parts[2].body.to_s.force_encoding('UTF-8')
         end
       end
 
@@ -227,7 +225,7 @@ class MessageTest < MailGpgTestCase
         assert decrypted = m.decrypt(:password => 'abc', verify: true)
         assert_equal 'test', decrypted.subject
         assert decrypted == @mail
-        assert_equal "one\r\neuro €", decrypted.body.to_s.force_encoding('UTF-8')
+        assert_equal "one\neuro €", decrypted.body.to_s.force_encoding('UTF-8')
         assert decrypted.signature_valid?
         assert_equal 1, decrypted.signatures.size
       end
