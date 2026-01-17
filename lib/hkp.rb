@@ -49,7 +49,16 @@ class Hkp
           if redirect_depth >= MAX_REDIRECTS
             raise TooManyRedirects
           else
-            http_get response['location'], redirect_depth + 1
+            location = URI.parse(response['location'])
+            if location.host && (location.host != @host || location.port != @port)
+              # Cross-host redirect - create new client for the target server
+              redirect_client = Client.new(response['location'], ssl_verify_mode: @ssl_verify_mode)
+              return redirect_client.get(location.request_uri, redirect_depth + 1)
+            else
+              # Same-host redirect (relative path or same host)
+              redirect_path = location.respond_to?(:request_uri) ? location.request_uri : response['location']
+              return get(redirect_path, redirect_depth + 1)
+            end
           end
         else
           raise InvalidResponse, response.code
@@ -65,7 +74,7 @@ class Hkp
     if String === options
       options = { keyserver: options }
     end
-    @keyserver = options.delete(:keyserver) || lookup_keyserver || 'http://pool.sks-keyservers.net:11371'
+    @keyserver = options.delete(:keyserver) || lookup_keyserver || 'hkp://keyserver.ubuntu.com'
     @options = { raise_errors: true }.merge options
   end
 
@@ -83,7 +92,7 @@ class Hkp
   # and what info they return besides the key id
   def search(name)
     [].tap do |results|
-      result = hkp_client.get "/pks/lookup?options=mr&search=#{URI.escape name}"
+      result = hkp_client.get "/pks/lookup?op=index&options=mr&search=#{URI.encode_www_form_component(name)}"
 
       result.each_line do |l|
         components = l.strip.split(':')
@@ -101,7 +110,7 @@ class Hkp
 
   # returns the key data as returned from the server as a string
   def fetch(id)
-    result = hkp_client.get "/pks/lookup?options=mr&op=get&search=0x#{URI.escape id}"
+    result = hkp_client.get "/pks/lookup?op=get&options=mr&search=0x#{URI.encode_www_form_component(id)}"
     return clean_key(result) if result
 
   rescue Exception
@@ -142,7 +151,7 @@ class Hkp
   def lookup_keyserver
     url = nil
     if res = exec_cmd("gpgconf --list-options gpgs 2>&1 | grep keyserver 2>&1")
-      url = URI.decode(res.split(":").last.split("\"").last.strip)
+      url = URI.decode_www_form_component(res.split(":").last.split("\"").last.strip)
     elsif res = exec_cmd("gpg --gpgconf-list 2>&1 | grep gpgconf-gpg.conf 2>&1")
       conf_file = res.split(":").last.split("\"").last.strip
       if res = exec_cmd("cat #{conf_file} 2>&1 | grep ^keyserver 2>&1")

@@ -1,10 +1,14 @@
 require 'open3'
 require 'test/unit'
 require 'shoulda/context'
+require 'webmock/test_unit'
 require 'mail-gpg'
 require 'action_mailer'
 require 'securerandom'
 require 'byebug'
+
+# Allow real connections by default, individual tests can disable
+WebMock.allow_net_connect!
 
 Mail.defaults do
   delivery_method :test
