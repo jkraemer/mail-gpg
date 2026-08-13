@@ -1,4 +1,4 @@
-== unreleased
+== 0.4.6 2026-08-13
 
 * fix double transfer-decoding of inline signed / encrypted mails: the
   rebuilt message kept the original Content-Transfer-Encoding header while
