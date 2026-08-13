@@ -71,32 +71,32 @@ class GPGTestUtils
   def gen_keys
     puts "setting up keydir #{@home}"
     FileUtils.mkdir_p @home
-    (File.open(File.join(@home, "gpg-agent.conf"), "wb") << "allow-preset-passphrase\nbatch\n").close
+    (File.open(File.join(@home, "gpg-agent.conf"), "wb") << "allow-preset-passphrase\n").close
     GPGME::Ctx.new do |gpg|
       gpg.generate_key <<-END
 <GnupgKeyParms format="internal">
-  Key-Type: DSA
-  Key-Length: 1024
-  Subkey-Type: ELG-E
-  Subkey-Length: 1024
+  %no-protection
+  Key-Type: RSA
+  Key-Length: 2048
+  Subkey-Type: RSA
+  Subkey-Length: 2048
   Name-Real: Joe Tester
   Name-Comment: with stupid passphrase
   Name-Email: joe@foo.bar
   Expire-Date: 0
-  Passphrase: abc
 </GnupgKeyParms>
 END
       gpg.generate_key <<-END
 <GnupgKeyParms format="internal">
-  Key-Type: DSA
-  Key-Length: 1024
-  Subkey-Type: ELG-E
-  Subkey-Length: 1024
+  %no-protection
+  Key-Type: RSA
+  Key-Length: 2048
+  Subkey-Type: RSA
+  Subkey-Length: 2048
   Name-Real: Jane Doe
   Name-Comment: with stupid passphrase
   Name-Email: jane@foo.bar
   Expire-Date: 0
-  Passphrase: abc
 </GnupgKeyParms>
 END
     end
