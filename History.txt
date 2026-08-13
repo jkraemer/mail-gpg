@@ -4,6 +4,11 @@
   rebuilt message kept the original Content-Transfer-Encoding header while
   its body was set to the already decoded (verified / decrypted) text, so
   reading the body would corrupt it (e.g. base64-decode plain text)
+* modernize test setup: RSA 2048 test keys generated without passphrase
+  protection (current GnuPG refuses to sign with the old DSA 1024 keys, and
+  interactive pinentry prompts no longer get in the way); bad passphrase
+  handling is now tested with a dedicated protected key via loopback
+  pinentry
 
 == 0.4.5 2026-01-20
 

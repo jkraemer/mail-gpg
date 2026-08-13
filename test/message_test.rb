@@ -298,24 +298,26 @@ class MessageTest < MailGpgTestCase
         end
 
         should "raise bad passphrase on decrypt" do
-          assert_equal 1, @mails.size
-          assert m = @mails.first
-          assert_equal 'test', m.subject
-          # incorrect passphrase
-          if @gpg_utils.preset_passphrases?
-            set_passphrase('incorrect')
-            # expected_exception = GPGME::Error::DecryptFailed
-            # I dont know why.
-            expected_exception = EOFError
-          else
-            expected_exception = GPGME::Error::BadPassphrase
+          # patty's key is passphrase protected; loopback pinentry keeps
+          # gpg-agent from prompting interactively
+          mail = Mail.new do
+            from 'joe@foo.bar'
+            to 'patty@foo.bar'
+            subject 'test'
+            body 'i am unencrypted'
+            gpg encrypt: true
           end
-          assert_raises(expected_exception){
-            m.decrypt(:password => 'incorrect')
+          mail.deliver
+          assert m = @mails.last
+          assert_equal 'test', m.subject
+          assert m.encrypted?
+          # incorrect passphrase
+          assert_raises(GPGME::Error::BadPassphrase){
+            m.decrypt(password: 'incorrect', pinentry_mode: GPGME::PINENTRY_MODE_LOOPBACK)
           }
-          # no passphrase
-          assert_raises(expected_exception){
-            m.decrypt
+          # no passphrase - gpg gets no data from the loopback pinentry
+          assert_raises(GPGME::Error::NoData){
+            m.decrypt(pinentry_mode: GPGME::PINENTRY_MODE_LOOPBACK)
           }
         end
       end

@@ -99,6 +99,21 @@ END
   Expire-Date: 0
 </GnupgKeyParms>
 END
+      # passphrase protected key for testing bad passphrase handling with
+      # loopback pinentry
+      gpg.generate_key <<-END
+<GnupgKeyParms format="internal">
+  Key-Type: RSA
+  Key-Length: 2048
+  Subkey-Type: RSA
+  Subkey-Length: 2048
+  Name-Real: Patty Protected
+  Name-Comment: with stupid passphrase
+  Name-Email: patty@foo.bar
+  Expire-Date: 0
+  Passphrase: abc
+</GnupgKeyParms>
+END
     end
   end
 
