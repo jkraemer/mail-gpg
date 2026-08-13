@@ -9,6 +9,8 @@
   interactive pinentry prompts no longer get in the way); bad passphrase
   handling is now tested with a dedicated protected key via loopback
   pinentry
+* CI runs on GitHub Actions with Ruby 2.7.8 / Rails 5.2.8.1 and
+  Ruby 3.2 / 3.4 with Rails 8
 
 == 0.4.5 2026-01-20
 
