@@ -17,6 +17,10 @@ module Mail
                 success, vr = GpgmeHelper.inline_verify(signed_text, options)
                 p = VerifiedPart.new(part)
                 if success
+                  # the body set here is already decoded, so a transfer
+                  # encoding copied over from the original part would lead to
+                  # double decoding
+                  p.header['Content-Transfer-Encoding'] = nil
                   p.body self.class.strip_inline_signature signed_text
                 end
                 p.verify_result vr
@@ -33,6 +37,9 @@ module Mail
             signed_mail.header.fields.each do |field|
               header[field.name] = field.value
             end
+            # the body set below is already decoded, so a transfer encoding
+            # copied over from the original mail would lead to double decoding
+            header['Content-Transfer-Encoding'] = nil
             signed_text = signed_mail.body.to_s
             success, vr = GpgmeHelper.inline_verify(signed_text, options)
             if success

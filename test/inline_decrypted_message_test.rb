@@ -31,6 +31,24 @@ class InlineDecryptedMessageTest < MailGpgTestCase
         assert sig.to_s=~ /Joe/
         assert sig.valid?
       end
+
+      should "decrypt base64 encoded body" do
+        mail = Mail.new(@mail)
+        cipher_text = InlineDecryptedMessageTest.encrypt(mail, mail.body.to_s)
+        mail.content_transfer_encoding 'base64'
+        mail.body Mail::Encodings::Base64.encode(cipher_text)
+        mail = Mail.new(mail.encoded)
+
+        assert !mail.multipart?
+        assert mail.encrypted?
+        assert decrypted = mail.decrypt(:password => 'abc', verify: true)
+        assert_equal 'i am unencrypted', decrypted.body.decoded,
+          "body was double decoded: #{decrypted.body.decoded.inspect}"
+        assert vr = decrypted.verify_result
+        assert sig = vr.signatures.first
+        assert sig.to_s=~ /Joe/
+        assert sig.valid?
+      end
     end
 
     context "multipart/alternative message" do
@@ -74,6 +92,35 @@ class InlineDecryptedMessageTest < MailGpgTestCase
         assert /application\/octet-stream; (?:charset=UTF-8; )?name=Rakefile/ =~ decrypted.parts[0].content_type
         assert_equal 'attachment; filename=Rakefile', decrypted.parts[0].content_disposition
         assert_equal rakefile, decrypted.parts[0].body.decoded
+      end
+    end
+
+    context "base64 encoded cleartext part and encrypted attachment message" do
+      should "decrypt attachment and not double decode text part" do
+        rakefile = File.open('Rakefile') { |file| file.read }
+        mail = Mail.new(@mail)
+        mail.content_type = 'multipart/mixed'
+        mail.body = ''
+        mail.part do |p|
+          p.content_type 'text/plain'
+          p.content_transfer_encoding 'base64'
+          p.body Mail::Encodings::Base64.encode('i am unencrypted')
+        end
+        mail.part do |p|
+          p.content_type 'application/octet-stream; name=Rakefile.pgp'
+          p.content_transfer_encoding Mail::Encodings::Base64
+          p.content_disposition 'attachment; filename="Rakefile.pgp"'
+          p.body Mail::Encodings::Base64::encode(InlineDecryptedMessageTest.encrypt(mail, rakefile, false))
+        end
+
+        assert mail.multipart?
+        assert mail.encrypted?
+        assert decrypted = mail.decrypt(password: 'abc')
+        assert !decrypted.encrypted?
+        assert_equal 2, decrypted.parts.length
+        assert_equal 'i am unencrypted', decrypted.parts[0].body.decoded,
+          "part was double decoded: #{decrypted.parts[0].body.decoded.inspect}"
+        assert_equal rakefile, decrypted.parts[1].body.decoded
       end
     end
 

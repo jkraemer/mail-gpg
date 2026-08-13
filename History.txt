@@ -1,3 +1,10 @@
+== unreleased
+
+* fix double transfer-decoding of inline signed / encrypted mails: the
+  rebuilt message kept the original Content-Transfer-Encoding header while
+  its body was set to the already decoded (verified / decrypted) text, so
+  reading the body would corrupt it (e.g. base64-decode plain text)
+
 == 0.4.5 2026-01-20
 
 * fix HKP client for Ruby 3.0+ (replaced deprecated URI.escape/decode)

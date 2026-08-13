@@ -59,7 +59,9 @@ module Mail
                   else
                     p.content_type part.content_type
                     p.content_transfer_encoding part.content_transfer_encoding
-                    p.body part.body.to_s
+                    # keep the raw (still encoded) body to match the transfer
+                    # encoding copied above - body.to_s would decode it
+                    p.body part.body.raw_source
                   end
                 end
               end
@@ -72,6 +74,10 @@ module Mail
             cipher_mail.header.fields.each do |field|
               header[field.name] = field.value
             end
+            # the decrypted body set below is not transfer encoded, so an
+            # encoding copied over from the original mail would lead to
+            # double decoding
+            header['Content-Transfer-Encoding'] = nil
             body decrypted.to_s
             verify_result decrypted.verify_result if options[:verify] && '' != decrypted
           end

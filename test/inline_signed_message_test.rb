@@ -54,9 +54,54 @@ class InlineSignedMessageTest < MailGpgTestCase
         assert !sig.valid?
       end
 
+      should "verify base64 encoded body" do
+        mail = Mail.new(@mail)
+        signed_text = self.class.inline_sign(mail, mail.body.to_s)
+        mail.content_transfer_encoding 'base64'
+        mail.body Mail::Encodings::Base64.encode(signed_text)
+        mail = Mail.new(mail.encoded)
+        assert !mail.multipart?
+        assert mail.signed?
+        assert verified = mail.verify
+        assert verified.signature_valid?
+        assert verified.body.decoded.include?('i am unencrypted'),
+          "body was double decoded: #{verified.body.decoded.inspect}"
+      end
+
+      should "keep base64 encoded body readable when signature is invalid" do
+        mail = Mail.new(@mail)
+        signed_text = self.class.inline_sign(mail, mail.body.to_s).gsub /i am/, 'i was'
+        mail.content_transfer_encoding 'base64'
+        mail.body Mail::Encodings::Base64.encode(signed_text)
+        mail = Mail.new(mail.encoded)
+        assert !mail.multipart?
+        assert mail.signed?
+        assert verified = mail.verify
+        assert !verified.signature_valid?
+        assert verified.body.decoded.include?('i was unencrypted'),
+          "body was double decoded: #{verified.body.decoded.inspect}"
+      end
+
     end
 
     context "message with signed attachment" do
+      should "check base64 encoded attachment signature" do
+        mail = Mail.new(@mail)
+        mail.body = 'foobar'
+        signed_text = self.class.inline_sign(mail, 'sign me!')
+        mail.part do |p|
+          p.content_transfer_encoding 'base64'
+          p.body Mail::Encodings::Base64.encode(signed_text)
+        end
+        mail = Mail.new(mail.encoded)
+        assert mail.multipart?
+        assert mail.signed?
+        assert verified = mail.verify
+        assert verified.signature_valid?
+        assert verified.parts.last.body.decoded.include?('sign me!'),
+          "part was double decoded: #{verified.parts.last.body.decoded.inspect}"
+      end
+
       should "check attachment signature" do
         mail = Mail.new(@mail)
         mail.body = 'foobar'
